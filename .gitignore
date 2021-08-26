@@ -128,5 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-roberta/models
+roberta/models/*/model.pt
 .idea
+fairseq
