@@ -18,7 +18,3 @@ def load_shuffled_model(path):
 
     else:
         return RobertaModel.from_pretrained(path)
-
-
-m = load_shuffled_model('./models/roberta.base.nopos')
-print("ok")
