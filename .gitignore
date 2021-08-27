@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 roberta/models/*/model.pt
+roberta/glue/*/
 .idea
 fairseq
