@@ -132,3 +132,4 @@ roberta/models/*/model.pt
 roberta/glue/*/
 .idea
 fairseq
+corpora/
