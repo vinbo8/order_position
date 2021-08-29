@@ -130,6 +130,6 @@ dmypy.json
 
 roberta/models/*/model.pt
 roberta/glue/*/
+roberta/viz/*.tokens
 .idea
-fairseq
 corpora/
