@@ -37,8 +37,8 @@ def main():
                 continue
 
     # write out embeds file
-    out_file_name = arguments.out_folder + 'embs-' + arguments.dataset_name + \
-                    '-cntx_count-' + str(arguments.no_contexts_limit) + '.txt'
+    out_file_name = open(arguments.out_folder + 'embs-' + arguments.dataset_name + \
+                    '-cntx_count-' + str(arguments.no_contexts_limit) + '.txt', 'w')
     json.dump(embed_dict, out_file_name)
 
 if __name__ == '__main__':
