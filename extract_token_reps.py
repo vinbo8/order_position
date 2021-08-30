@@ -31,7 +31,7 @@ def main():
                 enc = roberta.extract_features_aligned_to_words(line.strip())
                 for tok in enc:
                     if len(embed_dict[str(tok)]) < arguments.no_contexts_limit:
-                        print('{:100}{} (...)'.format(str(tok), tok.vector[-1:].cpu().detach().numpy()))
+                        #print('{:100}{} (...)'.format(str(tok), tok.vector[-1:].cpu().detach().numpy()))
                         embed_dict[str(tok)].append(tok.vector.cpu().detach().numpy())
             except:
                 continue
