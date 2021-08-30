@@ -5,6 +5,8 @@ import pickle
 from fairseq.models.roberta import RobertaModel
 
 
+use_cuda = torch.cuda.is_available()
+
 def load_shuffled_model(path):
     if "nopos" in path:
         base_model = RobertaModel.from_pretrained(os.path.join(os.path.split(path)[0], "roberta.base.orig"))
@@ -14,7 +16,12 @@ def load_shuffled_model(path):
         state_dict = torch.load(os.path.join(path, "model.pt"))
         new_model.load_state_dict(state_dict['model'])
         base_model.model = new_model
+        if use_cuda:
+            base_model.cuda()
         return base_model
 
     else:
-        return RobertaModel.from_pretrained(path)
+        model = RobertaModel.from_pretrained(path)
+        if use_cuda:
+            model.cuda()
+        return model
