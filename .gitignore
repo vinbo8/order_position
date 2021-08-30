@@ -133,3 +133,4 @@ roberta/glue/*/
 roberta/viz/*.tokens
 .idea
 corpora/
+fairseq-current/
