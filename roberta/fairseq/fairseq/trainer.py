@@ -478,12 +478,13 @@ class Trainer(object):
 
             # load model parameters
             try:
-                if self.cfg.model.drop_position:
-                    del state["model"]["encoder.sentence_encoder.embed_positions.weight"]
-
-                if self.cfg.model.introduce_position:
-                    state["model"]["encoder.sentence_encoder.embed_positions.weight"] = \
-                        self.model.encoder.sentence_encoder.embed_positions.weight
+                if 'nopos' in self.cfg['model'].restore_file:
+                    if self.cfg.model.invert_position:
+                        state["model"]["encoder.sentence_encoder.embed_positions.weight"] = \
+                            self.model.encoder.sentence_encoder.embed_positions.weight
+                else:
+                    if self.cfg.model.invert_position:
+                        del state["model"]["encoder.sentence_encoder.embed_positions.weight"]
 
                 self.model.load_state_dict(
                     state["model"], strict=True, model_cfg=self.cfg.model

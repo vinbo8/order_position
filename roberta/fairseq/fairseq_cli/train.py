@@ -92,15 +92,15 @@ def main(cfg: FairseqConfig) -> None:
     # Build model and criterion
     if 'nopos' in cfg['model'].restore_file:
         logger.info("loading position-free model")
-        cfg.model.no_token_positional_embeddings = True
-
-    if cfg.model.drop_position:
-        logger.info("removing positional embeddings")
-        cfg.model.no_token_positional_embeddings = True
-
-    if cfg.model.introduce_position:
-        logger.info("adding positional embeddings")
-        cfg.model.no_token_positional_embeddings = False
+        if cfg.model.invert_position:
+            logger.info("adding position before fine-tuning")
+        else:
+            cfg.model.no_token_positional_embeddings = True
+    else:
+        logger.info("loading position-aware model")
+        if cfg.model.invert_position:
+            logger.info("removing position before fine-tuning")
+            cfg.model.no_token_positional_embeddings = True
 
     if cfg.distributed_training.ddp_backend == "fully_sharded":
         with fsdp_enable_wrap(cfg.distributed_training):
@@ -505,8 +505,7 @@ def cli_main(
     parser = options.get_training_parser()
 
     group = parser.add_argument_group("Position")
-    group.add_argument("--drop-position", action="store_true")
-    group.add_argument("--introduce-position", action="store_true")
+    group.add_argument("--invert-position", action="store_true")
 
     args = options.parse_args_and_arch(parser, modify_parser=modify_parser)
 
