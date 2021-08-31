@@ -17,7 +17,7 @@ def main():
 
     # Load pre-trained model (weights) and test o
     #model = load_shuffled_model('roberta/models/roberta.base.orig')
-    roberta = RobertaModel.from_pretrained(arguments.model_path, 'model.pt', arguments.dataset_path)
+    roberta = RobertaModel.from_pretrained(arguments.model_path, 'checkpoint_best.pt', arguments.dataset_path)
     roberta.cuda()
     nsamples, ncorrect = 0, 0
     for sentence, label in wsc_utils.jsonl_iterator(arguments.dataset_path + arguments.split + '.jsonl', eval=True):
