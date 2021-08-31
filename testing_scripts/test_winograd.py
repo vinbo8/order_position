@@ -26,3 +26,6 @@ def main():
         if pred == label:
             ncorrect += 1
     print('Accuracy: ' + str(ncorrect / float(nsamples)))
+
+if __name__ == '__main__':
+    main();
