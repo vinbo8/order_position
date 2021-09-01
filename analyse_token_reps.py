@@ -60,9 +60,9 @@ def cai_analysis(d, args):
     for k in d:
         lengths[k] = len(d[k])
         if args.no_cntx_limit >= 1:
-            lengths[k] = min(len(d[k]), int(args.maxl))  # maxl
-        if args.no_cntx_limit > 0 and args.maxl < 1:
-            lengths[k] = max(1, int(len(d[k]) * args.maxl))  # fraction
+            lengths[k] = min(len(d[k]), int(args.no_cntx_limit))  # maxl
+        if args.no_cntx_limit > 0 and args.no_cntx_limit < 1:
+            lengths[k] = max(1, int(len(d[k]) * args.no_cntx_limit))  # fraction
         if args.no_cntx_limit == -1:
             lengths[k] = max(1, int(np.log2(len(d[k]))))  # log
         if args.no_cntx_limit == -2:
