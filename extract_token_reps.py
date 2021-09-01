@@ -34,10 +34,11 @@ def main():
                         #print('{:100}{} (...)'.format(str(tok), tok.vector[-1:].cpu().detach().numpy()))
                         embed_dict[str(tok)].append(str(list(tok.vector.cpu().detach().numpy())))
             except:
-                continue
+                    continue
 
     # write out embeds file
-    out_file_name = open(arguments.out_folder + 'embs-' + arguments.dataset_name + \
+    model_name = arguments.model_path.split('/')[-1]
+    out_file_name = open(arguments.out_folder + model_name + '-embs-' + arguments.dataset_name + \
                     '-cntx_count-' + str(arguments.no_contexts_limit) + '.txt', 'w')
     json.dump(embed_dict, out_file_name)
 
