@@ -102,7 +102,7 @@ def cai_analysis(d, args):
         y = StandardScaler(with_std=False).fit(y).transform(y)
 
     # inter cos
-    assert (args.maxl > 0)
+    assert (args.no_cntx_limit > 0)
     avg_cos = intercos(y, args.center)
     print("inter cos: ", avg_cos)
 
