@@ -113,8 +113,8 @@ def cai_analysis(d, args):
 
 def main():
     parser = argparse.ArgumentParser(description="analyse token embeds");
-    parser.add_argument('-d', "--embeds_path", type=str, default='ptb');
-    parser.add_argument('-a', "--analysis_type", type=str, default='Cai_2021');
+    parser.add_argument('-e', "--embeds_path", type=str, default='ptb');
+    parser.add_argument('-a', "--analysis_type", type=str, default='cai_2021');
     parser.add_argument('-no', "--no_cntx_limit", type=int, default=100);
     arguments = parser.parse_args();
 
@@ -122,7 +122,7 @@ def main():
     embeds_dict = json.load((open(arguments.embeds_path, 'r')))
 
     #run analysis
-    cai_analysis(embeds_dict)
+    cai_analysis(embeds_dict, arguments)
 
 
 if __name__ == '__main__':
