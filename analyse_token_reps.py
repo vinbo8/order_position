@@ -117,6 +117,7 @@ def main():
     parser.add_argument('-a', "--analysis_type", type=str, default='cai_2021');
     parser.add_argument('-no', "--no_cntx_limit", type=int, default=100);
     parser.add_argument('-p', "--pca", type=int, default=0);
+    parser.add_argument('-c', "--center",  action='store', default=False);
     arguments = parser.parse_args();
 
     # load embeds
