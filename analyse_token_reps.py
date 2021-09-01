@@ -91,8 +91,8 @@ def cai_analysis(d, args):
 
     ## embed
     var_ratio = 1
-    if args.embed > 0:
-        pca = PCA(n_components=args.embed).fit(y)
+    if args.pca > 0:
+        pca = PCA(n_components=args.pca).fit(y)
         y = pca.transform(y)
         var_ratio = sum(pca.explained_variance_ratio_)
         print('after PCA:', y.shape)
@@ -116,6 +116,7 @@ def main():
     parser.add_argument('-e', "--embeds_path", type=str, default='ptb');
     parser.add_argument('-a', "--analysis_type", type=str, default='cai_2021');
     parser.add_argument('-no', "--no_cntx_limit", type=int, default=100);
+    parser.add_argument('-p', "--pca", type=int, default=0);
     arguments = parser.parse_args();
 
     # load embeds
