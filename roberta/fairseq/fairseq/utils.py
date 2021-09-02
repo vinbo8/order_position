@@ -257,7 +257,7 @@ def make_positions(tensor, padding_idx: int, onnx_trace: bool = False, scramble:
     mask = tensor.ne(padding_idx).int()
     if scramble:
         return torch.stack([F.pad(torch.randperm(i)+2, (0, mask.size(-1)-i), value=padding_idx)
-                            for i in torch.count_nonzero(mask, dim=-1)])
+                            for i in torch.count_nonzero(mask, dim=-1)]).type_as(mask)
     else:
         return (torch.cumsum(mask, dim=1).type_as(mask) * mask).long() + padding_idx
 
