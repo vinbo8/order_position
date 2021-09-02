@@ -39,7 +39,7 @@ def main():
     # write out embeds file
     model_name = arguments.model_path.split('/')[-1]
     out_file_name = open(arguments.out_folder + model_name + '-embs-' + arguments.dataset_name + \
-                    '-cntx_count-' + str(arguments.no_contexts_limit) + '.txt', 'w')
+                    '-cntx_count-' + str(arguments.no_contexts_limit), 'w')
     p.dump(embed_dict, out_file_name)
 
 if __name__ == '__main__':
