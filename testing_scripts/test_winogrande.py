@@ -20,11 +20,12 @@ def main():
     roberta = RobertaModel.from_pretrained(arguments.model_path, 'checkpoint_best.pt', arguments.dataset_path)
     roberta.cuda()
     nsamples, ncorrect = 0, 0
-    for sentence, label in wsc_utils.jsonl_iterator(arguments.dataset_path + arguments.split + '.jsonl', eval=True):
-        pred = roberta.disambiguate_pronoun(sentence)
+    for sentence, pronoun_span, query, cand in wsc_utils.winogrande_jsonl_iterator(arguments.dataset_path + arguments.split + '.jsonl', eval=True):
+        pred = roberta.winogrande_disambiguate_pronoun(sentence)
+        print(pred)
         nsamples += 1
-        if pred == label:
-            ncorrect += 1
+        #if pred == label:
+        #    ncorrect += 1
     print('Accuracy: ' + str(ncorrect / float(nsamples)))
 
 if __name__ == '__main__':
