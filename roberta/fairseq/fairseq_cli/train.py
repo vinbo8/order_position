@@ -506,6 +506,8 @@ def cli_main(
 
     group = parser.add_argument_group("Position")
     group.add_argument("--invert-position", action="store_true")
+    group.add_argument("--scramble-position", action="store_true")
+    group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
 
     args = options.parse_args_and_arch(parser, modify_parser=modify_parser)
 

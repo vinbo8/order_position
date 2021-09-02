@@ -33,6 +33,7 @@ class LearnedPositionalEmbedding(nn.Embedding):
         input: Tensor,
         incremental_state: Optional[Dict[str, Dict[str, Optional[Tensor]]]] = None,
         positions: Optional[Tensor] = None,
+        scramble: bool = False,
     ):
         """Input is expected to be of size [bsz x seqlen]."""
         assert (positions is None) or (
@@ -48,7 +49,7 @@ class LearnedPositionalEmbedding(nn.Embedding):
                 ).fill_(int(self.padding_idx + input.size(1)))
             else:
                 positions = utils.make_positions(
-                    input, self.padding_idx, onnx_trace=self.onnx_trace
+                    input, self.padding_idx, onnx_trace=self.onnx_trace, scramble=scramble
                 )
         return F.embedding(
             positions,

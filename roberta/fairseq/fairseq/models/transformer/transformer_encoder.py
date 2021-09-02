@@ -122,7 +122,9 @@ class TransformerEncoderBase(FairseqEncoder):
             token_embedding = self.embed_tokens(src_tokens)
         x = embed = self.embed_scale * token_embedding
         if self.embed_positions is not None:
-            x = embed + self.embed_positions(src_tokens)
+            to_scramble = self.cfg.scramble_postion if self.cfg.scramble_partition == 'all' \
+                else (self.training ^ (self.cfg.scramble_position == 'ft'))
+            x = embed + self.embed_positions(src_tokens, scramble=to_scramble)
         if self.layernorm_embedding is not None:
             x = self.layernorm_embedding(x)
         x = self.dropout_module(x)
