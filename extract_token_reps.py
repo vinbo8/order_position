@@ -3,7 +3,7 @@ from fairseq.models.roberta import RobertaModel
 from roberta.dataset import get_dataset
 import argparse
 from collections import defaultdict
-import json
+import pickle as p
 
 
 def main():
@@ -40,7 +40,7 @@ def main():
     model_name = arguments.model_path.split('/')[-1]
     out_file_name = open(arguments.out_folder + model_name + '-embs-' + arguments.dataset_name + \
                     '-cntx_count-' + str(arguments.no_contexts_limit) + '.txt', 'w')
-    json.dump(embed_dict, out_file_name)
+    p.dump(embed_dict, out_file_name)
 
 if __name__ == '__main__':
     main();
