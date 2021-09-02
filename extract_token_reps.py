@@ -41,6 +41,7 @@ def main():
     out_file_name = open(arguments.out_folder + model_name + '-embs-' + arguments.dataset_name + \
                     '-cntx_count-' + str(arguments.no_contexts_limit), 'wb')
     p.dump(embed_dict, out_file_name)
+    out_file_name.close()
 
 if __name__ == '__main__':
     main();
