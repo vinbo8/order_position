@@ -34,7 +34,7 @@ class SinusoidalPositionalEmbedding(nn.Module):
 
     @staticmethod
     def get_embedding(
-        num_embeddings: int, embedding_dim: int, padding_idx: Optional[int] = None
+        num_embeddings: int, embedding_dim: int, padding_idx: Optional[int] = None,
     ):
         """Build sinusoidal embeddings.
 
@@ -63,6 +63,7 @@ class SinusoidalPositionalEmbedding(nn.Module):
         incremental_state: Optional[Any] = None,
         timestep: Optional[Tensor] = None,
         positions: Optional[Any] = None,
+        scramble: bool = False,
     ):
         """Input is expected to be of size [bsz x seqlen]."""
         bspair = torch.onnx.operators.shape_as_tensor(input)

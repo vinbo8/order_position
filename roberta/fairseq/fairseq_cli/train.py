@@ -102,6 +102,10 @@ def main(cfg: FairseqConfig) -> None:
             logger.info("removing position before fine-tuning")
             cfg.model.no_token_positional_embeddings = True
 
+    if cfg.model.use_sinusoidal:
+        logger.info("switching to sinusoidal position")
+        cfg.model.encoder_learned_pos = False
+
     if cfg.distributed_training.ddp_backend == "fully_sharded":
         with fsdp_enable_wrap(cfg.distributed_training):
             model = fsdp_wrap(task.build_model(cfg.model))
@@ -506,6 +510,7 @@ def cli_main(
 
     group = parser.add_argument_group("Position")
     group.add_argument("--invert-position", action="store_true")
+    group.add_argument("--use-sinusoidal", action="store_true")
     group.add_argument("--scramble-position", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
 
