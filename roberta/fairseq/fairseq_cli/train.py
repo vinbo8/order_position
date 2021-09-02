@@ -68,8 +68,8 @@ def main(cfg: FairseqConfig) -> None:
     np.random.seed(cfg.common.seed)
     utils.set_torch_seed(cfg.common.seed)
 
-    if distributed_utils.is_master(cfg.distributed_training):
-        checkpoint_utils.verify_checkpoint_directory(cfg.checkpoint.save_dir)
+    # if distributed_utils.is_master(cfg.distributed_training):
+    #     checkpoint_utils.verify_checkpoint_directory(cfg.checkpoint.save_dir)
 
     # Print args
     logger.info(cfg)
