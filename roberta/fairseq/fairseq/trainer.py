@@ -487,7 +487,8 @@ class Trainer(object):
                         del state["model"]["encoder.sentence_encoder.embed_positions.weight"]
 
                 if not self.cfg.model.encoder_learned_pos:
-                    del state["model"]["encoder.sentence_encoder.embed_positions.weight"]
+                    if "encoder.sentence_encoder.embed_positions.weight" in state["model"]:
+                        del state["model"]["encoder.sentence_encoder.embed_positions.weight"]
 
                 self.model.load_state_dict(
                     state["model"], strict=True, model_cfg=self.cfg.model
