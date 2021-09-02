@@ -3,7 +3,7 @@ from fairseq.models.roberta import RobertaModel
 from roberta.dataset import get_dataset
 import argparse
 from collections import defaultdict
-import json
+import pickle as p
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
     for line in train_iter:
         if len(line.strip()) > 0:
             try:
-                enc = roberta.extract_features_aligned_to_words(line.strip())
+                enc = roberta.extract_features_aligned_to_words(line.strip(), return_all_hiddens=True)
                 for tok in enc:
                     if len(embed_dict[str(tok)]) < arguments.no_contexts_limit:
                         #print('{:100}{} (...)'.format(str(tok), tok.vector[-1:].cpu().detach().numpy()))
@@ -39,8 +39,8 @@ def main():
     # write out embeds file
     model_name = arguments.model_path.split('/')[-1]
     out_file_name = open(arguments.out_folder + model_name + '-embs-' + arguments.dataset_name + \
-                    '-cntx_count-' + str(arguments.no_contexts_limit) + '.txt', 'w')
-    json.dump(embed_dict, out_file_name)
+                    '-cntx_count-' + str(arguments.no_contexts_limit), 'wb')
+    p.dump(embed_dict, out_file_name)
 
 if __name__ == '__main__':
     main();
