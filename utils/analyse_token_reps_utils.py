@@ -107,7 +107,7 @@ def cai_analysis(d, args):
     if args.pca > 0:
         if args.pca > 1: args.pca = int(args.pca)
         save_prefix += '.pca.' + str(args.pca) + '.'
-    if args.maxl > 0:
+    if args.no_cntx_limit > 0:
         save_prefix += '.no_cntx_limit.' + str(args.no_cntx_limit) + '.'
     if args.no_cntx_limit == -1:
         save_prefix += '.no_cntx_limit.log2.'
