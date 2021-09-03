@@ -12,6 +12,7 @@ def main():
     parser.add_argument('-e', "--embeds_path", type=str, default='ptb');
     parser.add_argument('-a', "--analysis_type", type=str, default='cai_2021');
     parser.add_argument('-no', "--no_cntx_limit", type=int, default=100);
+    parser.add_argument('-ns', "--no_samples_limit", type=int, default=20000);
     parser.add_argument('-p', "--pca", type=int, default=0);
     parser.add_argument('-c', "--center",  action='store', default=False);
     parser.add_argument('--lid', action='store_true', default=False, help='task for compute lid')
@@ -25,7 +26,7 @@ def main():
     embeds_dict = p.load((open(arguments.embeds_path, 'rb')))
 
     #run analysis
-    cai_analysis(embeds_dict, arguments)
+    cai_analysis({k: embeds_dict[k] for k in embeds_dict.keys()[:arguments.no_samples_limit]}, arguments)
 
 if __name__ == '__main__':
     main();
