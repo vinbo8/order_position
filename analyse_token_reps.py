@@ -1,6 +1,6 @@
 import argparse
 from collections import defaultdict
-import json
+import pickle as p
 import numpy as np
 from sklearn.preprocessing import StandardScaler, normalize
 from sklearn.metrics.pairwise import cosine_similarity
@@ -22,7 +22,7 @@ def main():
     arguments = parser.parse_args();
 
     # load embeds
-    embeds_dict = json.load((open(arguments.embeds_path, 'wb')))
+    embeds_dict = p.load((open(arguments.embeds_path, 'rb')))
 
     #run analysis
     cai_analysis(embeds_dict, arguments)
