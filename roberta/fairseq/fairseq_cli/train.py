@@ -510,11 +510,19 @@ def cli_main(
 
     group = parser.add_argument_group("Position")
     group.add_argument("--invert-position", action="store_true")
+    group.add_argument("--reset-position", action="store_true")
     group.add_argument("--use-sinusoidal", action="store_true")
     group.add_argument("--scramble-position", action="store_true")
+    group.add_argument("--scramble-tokens", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
+    group.add_argument("--preserve-edge", choices=["both", "bos", "eos", "none"], default="none")
 
     args = options.parse_args_and_arch(parser, modify_parser=modify_parser)
+    assert not (args.scramble_position and args.scramble_tokens)
+
+    if args.reset_position:
+        assert not any([args.scramble_position, args.scramble_tokens, args.use_sinusoidal, args.invert_position])
+        assert 'nopos' not in args.restore_file
 
     cfg = convert_namespace_to_omegaconf(args)
 

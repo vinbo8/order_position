@@ -490,6 +490,12 @@ class Trainer(object):
                     if "encoder.sentence_encoder.embed_positions.weight" in state["model"]:
                         del state["model"]["encoder.sentence_encoder.embed_positions.weight"]
 
+                if self.cfg.model.reset_position:
+                    embed_dim =  state["model"]["encoder.sentence_encoder.embed_positions.weight"].size(-1)
+                    from torch import nn
+                    nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
+                                    mean=0, std=embed_dim ** -0.5)
+
                 self.model.load_state_dict(
                     state["model"], strict=True, model_cfg=self.cfg.model
                 )
