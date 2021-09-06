@@ -210,6 +210,15 @@ def main(cfg: FairseqConfig) -> None:
     train_meter.stop()
     logger.info("done training in {:.1f} seconds".format(train_meter.sum))
 
+    if cfg.model.log_lca:
+        import pickle
+        task_name = cfg.task.data.rstrip("/").split("/")[-1].split("-")[0]
+        dump_file = os.path.join(cfg.model.lca_log_dir, task_name)
+        logger.info("dumping LCA params to {}".format(cfg.model.lca_log_dir))
+        # don't ask
+        with open(dump_file, "wb") as f:
+            pickle.dump(trainer._lca, f)
+
     # ioPath implementation to wait for all asynchronous file writes to complete.
     if cfg.checkpoint.write_checkpoints_asynchronously:
         logger.info(
@@ -512,6 +521,8 @@ def cli_main(
     group.add_argument("--invert-position", action="store_true")
     group.add_argument("--reset-position", action="store_true")
     group.add_argument("--use-sinusoidal", action="store_true")
+    group.add_argument("--log-lca", action="store_true")
+    group.add_argument("--lca-log-dir", action="store")
     group.add_argument("--scramble-position", action="store_true")
     group.add_argument("--scramble-tokens", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
@@ -519,6 +530,7 @@ def cli_main(
 
     args = options.parse_args_and_arch(parser, modify_parser=modify_parser)
     assert not (args.scramble_position and args.scramble_tokens)
+    assert not (args.log_lca ^ bool(args.lca_log_dir))
 
     if args.reset_position:
         assert not any([args.scramble_position, args.scramble_tokens, args.use_sinusoidal, args.invert_position])

@@ -131,6 +131,7 @@ class Trainer(object):
         self._warn_once = set()
         self._wrapped_criterion = None
         self._wrapped_model = None
+        self._lca = []
 
         # TODO(myleott): support tpu
         if self.cuda and self.data_parallel_world_size > 1:
@@ -492,7 +493,7 @@ class Trainer(object):
 
                 if self.cfg.model.reset_position:
                     logger.info("resetting position")
-                    embed_dim =  state["model"]["encoder.sentence_encoder.embed_positions.weight"].size(-1)
+                    embed_dim = state["model"]["encoder.sentence_encoder.embed_positions.weight"].size(-1)
                     from torch import nn
                     nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
                                     mean=0, std=embed_dim ** -0.5)
@@ -685,6 +686,11 @@ class Trainer(object):
         self._set_seed()
         self.model.train()
         self.criterion.train()
+
+        # LCA
+        lca_params = {}
+        theta_t = {k: v.data.clone() for k, v in self.model.named_parameters() if v.requires_grad}
+
         self.zero_grad()
 
         metrics.log_start_time("train_wall", priority=800, round=0)
@@ -873,6 +879,15 @@ class Trainer(object):
                 self._log_oom(e)
                 logger.error("OOM during optimization, irrecoverable")
             raise e
+
+        # do all the LCA bullshit
+        for k, v in self.model.named_parameters():
+            if not v.requires_grad or isinstance(v.grad, type(None)):
+                continue
+            lca = (v.data - theta_t[k]) * v.grad
+            lca_params[k] = lca.sum(), lca.mean()
+
+        self._lca.append(lca_params)
 
         # Some distributed wrappers (e.g., SlowMo) need access to the optimizer
         # after the step
