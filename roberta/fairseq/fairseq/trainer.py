@@ -131,7 +131,7 @@ class Trainer(object):
         self._warn_once = set()
         self._wrapped_criterion = None
         self._wrapped_model = None
-        self._lca = []
+        self._lca = {}
 
         # TODO(myleott): support tpu
         if self.cuda and self.data_parallel_world_size > 1:
@@ -688,7 +688,6 @@ class Trainer(object):
         self.criterion.train()
 
         # LCA
-        lca_params = {}
         theta_t = {k: v.data.clone() for k, v in self.model.named_parameters() if v.requires_grad}
 
         self.zero_grad()
@@ -885,9 +884,10 @@ class Trainer(object):
             if not v.requires_grad or isinstance(v.grad, type(None)):
                 continue
             lca = (v.data - theta_t[k]) * v.grad
-            lca_params[k] = lca.sum(), lca.mean()
-
-        self._lca.append(lca_params)
+            if k not in self._lca:
+                self._lca[k] = lca.sum().detach().numpy()
+            else:
+                self._lca[k].append(lca.sum().detach().numpy())
 
         # Some distributed wrappers (e.g., SlowMo) need access to the optimizer
         # after the step

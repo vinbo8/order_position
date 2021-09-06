@@ -212,6 +212,7 @@ def main(cfg: FairseqConfig) -> None:
 
     if cfg.model.log_lca:
         import pickle
+        logger.info("compressing LCA by 50")
         logger.info("dumping LCA params to {}".format(cfg.model.lca_log_file))
         with open(cfg.model.lca_log_file, "wb") as f:
             pickle.dump(trainer._lca, f)
