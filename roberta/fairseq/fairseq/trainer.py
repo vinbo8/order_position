@@ -885,9 +885,9 @@ class Trainer(object):
                 continue
             lca = (v.data - theta_t[k]) * v.grad
             if k not in self._lca:
-                self._lca[k] = lca.sum().detach().numpy()
+                self._lca[k] = lca.sum().detach().cpu().numpy()
             else:
-                self._lca[k].append(lca.sum().detach().numpy())
+                self._lca[k].append(lca.sum().detach().cpu().numpy())
 
         # Some distributed wrappers (e.g., SlowMo) need access to the optimizer
         # after the step
