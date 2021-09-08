@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from fairseq import utils
 from fairseq.distributed import fsdp_wrap
 from fairseq.models import FairseqEncoder
@@ -117,6 +118,18 @@ class TransformerEncoderBase(FairseqEncoder):
     def forward_embedding(
         self, src_tokens, token_embedding: Optional[torch.Tensor] = None
     ):
+        # scramble if necessary
+        partition = self.cfg.scramble_partition
+        if self.cfg.scramble_token and (partition == "all" or not (self.training ^ (partition == "ft"))):
+            mask = (src_tokens > 2)
+            safe_mask = (src_tokens != 1)
+            index = torch.stack([F.pad(torch.randperm(i)+1, (1, mask.size(-1)-i-1), value=0)
+                                 for i in torch.count_nonzero(mask, dim=-1)]).type_as(src_tokens)
+            src_tokens = torch.gather(src_tokens, 1, index).type_as(src_tokens)
+            src_tokens = ((src_tokens - 2) * mask) + 2
+            src_tokens = ((src_tokens - 1) * safe_mask) + 1
+            src_tokens[:, 0] = 0
+
         # embed tokens and positions
         if token_embedding is None:
             token_embedding = self.embed_tokens(src_tokens)
@@ -124,7 +137,7 @@ class TransformerEncoderBase(FairseqEncoder):
         if self.embed_positions is not None:
             to_scramble = self.cfg.scramble_position if self.cfg.scramble_partition == 'all' \
                 else self.cfg.scramble_position & (self.training ^ (self.cfg.scramble_partition == 'ft'))
-            x = embed + self.embed_positions(src_tokens, scramble=to_scramble)
+            x = embed + self.embed_positions(src_tokens, scramble=False)
         if self.layernorm_embedding is not None:
             x = self.layernorm_embedding(x)
         x = self.dropout_module(x)
