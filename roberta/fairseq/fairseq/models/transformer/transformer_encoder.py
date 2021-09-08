@@ -120,7 +120,7 @@ class TransformerEncoderBase(FairseqEncoder):
     ):
         # scramble if necessary
         partition = self.cfg.scramble_partition
-        if self.cfg.scramble_token and (partition == "all" or not (self.training ^ (partition == "ft"))):
+        if self.cfg.scramble_tokens and (partition == "all" or not (self.training ^ (partition == "ft"))):
             mask = (src_tokens > 2)
             safe_mask = (src_tokens != 1)
             index = torch.stack([F.pad(torch.randperm(i)+1, (1, mask.size(-1)-i-1), value=0)
