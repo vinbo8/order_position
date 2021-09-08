@@ -534,6 +534,12 @@ def cli_main(
         assert not any([args.scramble_position, args.scramble_tokens, args.use_sinusoidal, args.invert_position])
         assert 'nopos' not in args.restore_file
 
+    if args.scramble_position:
+        logger.info(f"scrambling position at {args.scramble_partition}")
+
+    if args.scramble_tokens:
+        logger.info(f"scrambling tokens at {args.scramble_partition}")
+
     cfg = convert_namespace_to_omegaconf(args)
 
     if cfg.common.use_plasma_view:
