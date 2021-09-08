@@ -531,7 +531,6 @@ def cli_main(
     assert not (args.log_lca ^ bool(args.lca_log_file))
 
     if args.reset_position:
-        assert not any([args.scramble_position, args.scramble_tokens, args.use_sinusoidal, args.invert_position])
         assert 'nopos' not in args.restore_file
 
     if args.scramble_position:
