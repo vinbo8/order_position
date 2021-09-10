@@ -131,19 +131,18 @@ def cai_analysis(d, args):
     for k in d:
         keys += [k] * lengths[k]
 
-        y_tmp = list(map(lambda e: e[0], d[k]))
+        y_tmp = list(map(lambda e: e, d[k]))
         if lengths[k] < len(y_tmp):
             idx = np.random.choice(len(y_tmp), lengths[k], replace=False)  # sample without replacement
             y_tmp = [y_tmp[i] for i in idx]
         y += y_tmp
 
         repeats += [len(d[k])] * lengths[k]
-        window_ids += list(map(lambda e: e[1], d[k]))
-        pos_ids += list(map(lambda e: e[1] * 512 + e[2], d[k]))
-
+        #window_ids += list(map(lambda e: e[1], d[k]))
+        #pos_ids += list(map(lambda e: e[1] * 512 + e[2], d[k]))
     keys = np.stack(keys)
-    window_ids = np.stack(window_ids)
-    pos_ids = np.stack(pos_ids)
+    #window_ids = np.stack(window_ids)
+    #pos_ids = np.stack(pos_ids)
     y = np.stack(y)
     repeats = np.stack(repeats)
     print('total points: ', y.shape[0])
