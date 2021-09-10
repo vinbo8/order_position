@@ -37,7 +37,7 @@ def compute_perplexity(args, sentences):
     stride = 512
     #load dict
     dictionary = Dictionary.load(args.model_path + "/dict.txt")
-    #mask_idx = dictionary.add_symbol("<mask>")
+    mask_idx = dictionary.add_symbol("<mask>")
 
     all_sent_ppl = []
     for sentence in sentences:
@@ -49,18 +49,18 @@ def compute_perplexity(args, sentences):
             for token_to_mask_idx, _ in enumerate(tokens):
                 if token_to_mask_idx != 0 and token_to_mask_idx != len(tokens) - 1:
                     new_tokens = tokens.clone()
-                    #new_tokens[token_to_mask_idx] = mask_idx
+                    new_tokens[token_to_mask_idx] = mask_idx
                     print(new_tokens, ' new_tokens')
-                    #print(mask_idx, 'mask_idx')
-                    features = roberta.extract_features(tokens)
-                    logits = features[0, token_to_mask_idx, :].squeeze()
-                    print(logits)
+                    print(mask_idx, 'mask_idx')
+                    features = roberta.model(src_tokens=new_tokens.unsqueeze(0))
+                    logits = features[0].squeeze() #, token_to_mask_idx, :].squeeze()
                     #calc loss
+                    print(logits.shape, ' lshape')
                     # reshape lm_logits from (N,T,C) to (N*T,C)
                     lm_logits = logits.view(-1, logits.size(-1))
                     lm_targets = tokens.view(-1)
-                    lm_loss = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad())
-
+                    lm_loss = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad()).item()
+                    print(lm_loss, " lm_loss")
                     ppl = np.exp(lm_loss)
                     all_sent_ppl.append(ppl)
     mean_sent_ppl = mean(all_sent_ppl)
