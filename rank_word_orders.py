@@ -52,7 +52,7 @@ def compute_perplexity(args, sentences):
                     #new_tokens[token_to_mask_idx] = mask_idx
                     print(new_tokens, ' new_tokens')
                     #print(mask_idx, 'mask_idx')
-                    logits = roberta.model(src_tokens=tokens)
+                    logits = roberta.model(src_tokens=new_tokens)
                     #logits = features[0, token_to_mask_idx, :].squeeze()
                     print(logits)
                     #calc loss
