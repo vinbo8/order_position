@@ -59,7 +59,7 @@ def compute_perplexity(args, sentences):
                     # reshape lm_logits from (N,T,C) to (N*T,C)
                     lm_logits = logits.view(-1, logits.size(-1))
                     lm_targets = tokens.view(-1)
-                    lm_loss = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.padding_idx)
+                    lm_loss = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad())
 
                     ppl = np.exp(lm_loss)
                     all_sent_ppl.append(ppl)
