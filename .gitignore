@@ -130,6 +130,8 @@ dmypy.json
 
 roberta/models/*/model.pt
 roberta/glue/*/
+roberta/lca
 roberta/viz/*.tokens
 .idea
 corpora/
+fairseq-current/
