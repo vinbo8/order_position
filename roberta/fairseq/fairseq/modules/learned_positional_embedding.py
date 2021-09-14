@@ -53,18 +53,18 @@ class LearnedPositionalEmbedding(nn.Embedding):
                     input, self.padding_idx, onnx_trace=self.onnx_trace, scramble=scramble
                 )
                 if self.perturb == "ablate_intermediate":
-                    mask = (positions == self.padding_idx).to(positions.device)
-                    mask = torch.cat([mask[:, 1:], torch.ones(mask.size(0), 1)], dim=1)
+                    mask = (positions == self.padding_idx)
+                    mask = torch.cat([mask[:, 1:], torch.ones(mask.size(0), 1)], dim=1).type_as(positions)
                     mask[:, 0] = 1
                     positions = (positions * mask)
                     positions[positions == 0] = self.max_positions - 1
                     positions = positions.long()
                 elif self.perturb == "scramble_intermediate":
-                    mask = positions.ne(self.padding_idx).int().to(positions.device)
+                    mask = positions.ne(self.padding_idx).int()
                     positions = torch.stack([F.pad(
                         F.pad(torch.randperm(i - 2) + 3, (0, 1), value=i+1),
                         (0, mask.size(-1) - i), value=self.padding_idx)
-                        for i in torch.count_nonzero(mask, dim=-1)]).type_as(mask)
+                        for i in torch.count_nonzero(mask, dim=-1)]).type_as(positions)
                     positions = torch.cat([torch.ones(mask.size(0), 1) + 1, positions], dim=1).long()
 
         return F.embedding(
