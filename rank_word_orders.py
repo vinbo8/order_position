@@ -93,7 +93,8 @@ def main():
     # load dataset
     dataset_file = open(arguments.dataset_path, 'r').read()
     # pass to shuffle function, returns list of lists where inner list is of all perms per sentence
-    sentence_permutations = ud_permute(dataset_file, arguments.no_sentences)
+    sentence_permutations = ud_permute(dataset_file, no_sentences=arguments.no_sentences,
+                                       sentence_len_limit=arguments.max_sentence_len)
     # flatten list for now since we just compute a final perp score and turn each sublist into a string
     sentences = [' '.join(sent_list) for sublist in sentence_permutations for sent_list in sublist]
     print(len(sentences), ' no sents')
