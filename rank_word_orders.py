@@ -61,10 +61,10 @@ def compute_perplexity(args, sentences):
             # calc loss
             # reshape lm_logits from (N,T,C) to (N*T,C) and repeat targets along batch dim
             lm_logits = logits.view(-1, logits.size(-1))
-            lm_targets =  tokens.repeat(logits.shape[0],1)
+            lm_targets =  tokens.repeat(logits.shape[0],1).to(device)
             lm_targets = lm_targets.view(-1)
             # compute cross entropy
-            lm_loss_all = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad())#.item()
+            lm_loss_all = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad().to(device))#.item()
             # reshape to original shape
             lm_loss_all = lm_loss_all.reshape(logits.shape[0], logits.shape[1])
             #iterate over sents extract relevant losses
