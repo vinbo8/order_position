@@ -4,7 +4,7 @@ import random
 
 # ------------------------------------- functions --------------------------------------
 
-def ud_permute(ud_data, sentence_len_limit=10, no_sentences = 100,
+def ud_permute(ud_data, sentence_len_limit=None, no_sentences=None,
                shuffle_level='n1', permutation_type='linear', permutation_limit=None):
     # parse data
     sentences = parse(ud_data)
