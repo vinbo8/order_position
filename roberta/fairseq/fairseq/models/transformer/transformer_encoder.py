@@ -71,6 +71,7 @@ class TransformerEncoderBase(FairseqEncoder):
                 embed_dim,
                 self.padding_idx,
                 learned=cfg.encoder.learned_pos,
+                perturb=cfg.perturb,
             )
             if not cfg.no_token_positional_embeddings
             else None

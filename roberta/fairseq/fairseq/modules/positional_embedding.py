@@ -14,6 +14,7 @@ def PositionalEmbedding(
     embedding_dim: int,
     padding_idx: int,
     learned: bool = False,
+    perturb: str = "none",
 ):
     if learned:
         # if padding_idx is specified then offset the embedding ids by
@@ -22,7 +23,7 @@ def PositionalEmbedding(
         # LearnedPositionalEmbedding. Move this there for a cleaner implementation.
         if padding_idx is not None:
             num_embeddings = num_embeddings + padding_idx + 1
-        m = LearnedPositionalEmbedding(num_embeddings, embedding_dim, padding_idx)
+        m = LearnedPositionalEmbedding(num_embeddings, embedding_dim, padding_idx, perturb=perturb)
         nn.init.normal_(m.weight, mean=0, std=embedding_dim ** -0.5)
         if padding_idx is not None:
             nn.init.constant_(m.weight[padding_idx], 0)
