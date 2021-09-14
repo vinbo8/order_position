@@ -7,8 +7,8 @@ from statistics import mean
 from fairseq.data import Dictionary
 import numpy as np
 import copy
+from utils.rand_word_order_utils import ud_permute
 
-sentences = ['I am the walrus.', 'He is superman.']
 
 def compute_cross_entropy_loss(logits, targets, ignore_index=-100):
     """
@@ -19,11 +19,10 @@ def compute_cross_entropy_loss(logits, targets, ignore_index=-100):
     assert logits.size(0) == targets.size(
         -1
     ), "Logits and Targets tensor shapes don't match up"
-
     loss = F.nll_loss(
         F.log_softmax(logits, -1, dtype=torch.float32),
         targets,
-        reduction="sum",
+        reduction='none',
         ignore_index=ignore_index,
     )
     return loss
@@ -40,36 +39,45 @@ def compute_perplexity(args, sentences):
     mask_idx = dictionary.add_symbol("<mask>")
 
     all_sent_ppl = []
+
     for sentence in sentences:
+        sentence_loss = 0.
         with torch.no_grad():
+
             print(sentence)
             tokens = roberta.encode(sentence)
-            print(tokens.shape, ' tokens')
-
             for token_to_mask_idx, _ in enumerate(tokens):
                 if token_to_mask_idx != 0 and token_to_mask_idx != len(tokens) - 1:
                     new_tokens = tokens.clone()
                     new_tokens[token_to_mask_idx] = mask_idx
-                    print(new_tokens, ' new_tokens')
-                    print(mask_idx, 'mask_idx')
+                    #print(tokens, "tokens")
+                    #print(new_tokens, ' new_tokens')
+                    #print(mask_idx, 'mask_idx')
                     features = roberta.model(src_tokens=new_tokens.unsqueeze(0))
                     logits = features[0].squeeze() #, token_to_mask_idx, :].squeeze()
                     #calc loss
-                    print(logits.shape, ' lshape')
+                    #print(logits.shape, ' lshape')
                     # reshape lm_logits from (N,T,C) to (N*T,C)
                     lm_logits = logits.view(-1, logits.size(-1))
                     lm_targets = tokens.view(-1)
-                    lm_loss = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad()).item()
-                    print(lm_loss, " lm_loss")
-                    ppl = np.exp(lm_loss)
-                    all_sent_ppl.append(ppl)
-    mean_sent_ppl = mean(all_sent_ppl)
-    print(mean_sent_ppl, "mean_sent_ppl")
-    return mean_sent_ppl
+                    #lm_targets = torch.tensor([-100 if t != mask_idx else tokens[token_to_mask_idx] for t in new_tokens]).view(-1)
+                    #print(lm_targets, " lm_targets")
+                    lm_loss_all = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad())#.item()
+                    #print(lm_loss_all, " lm_loss_all")
+                    lm_loss_target = lm_loss_all[token_to_mask_idx].item()
+                    #print(lm_loss_target, "lm_loss_target")
+                    sentence_loss += lm_loss_target
+
+            ppl = np.exp(sentence_loss / len(tokens))
+            print(ppl, ' :per sent. perplexity')
+            all_sent_ppl.append(ppl)
+    mean_ppl = mean(all_sent_ppl)
+    print(mean_ppl, " :all_sent_mean_ppl")
+    return mean_ppl
 
 def main():
     parser = argparse.ArgumentParser(description="generate token embeddings from corpus");
-    parser.add_argument('-d', "--dataset_name", type=str, default='UD');
+    parser.add_argument('-d', "--dataset_path", type=str);
     parser.add_argument('-m', "--model_path", type=str);
     parser.add_argument('-l', "--max_sentence_len", type=int, default=100);
     parser.add_argument('-no', "--no_sentences", type=int, default=100);
@@ -77,8 +85,12 @@ def main():
     arguments = parser.parse_args();
 
     # load dataset
-    #train_iter, val_iter, test_iter  = get_dataset(arguments.dataset_name)
-
+    dataset_file = open(arguments.dataset_path, 'r').read()
+    # pass to shuffle function, returns list of lists where inner list is of all perms per sentence
+    sentence_permutations = ud_permute(dataset_file, arguments.no_sentences)
+    # flatten list for now since we just compute a final perp score and turn each sublist into a string
+    sentences = [' '.join(sent_list) for sublist in sentence_permutations for sent_list in sublist]
+    print(len(sentences), ' no sents')
     #get ppl
     compute_perplexity(arguments, sentences)
 
