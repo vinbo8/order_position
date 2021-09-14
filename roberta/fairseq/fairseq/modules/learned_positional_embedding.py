@@ -54,7 +54,7 @@ class LearnedPositionalEmbedding(nn.Embedding):
                 )
                 if self.perturb == "ablate_intermediate":
                     mask = (positions == self.padding_idx)
-                    mask = torch.cat([mask[:, 1:], torch.ones(mask.size(0), 1)], dim=1).type_as(positions)
+                    mask = torch.cat([mask[:, 1:], torch.ones(mask.size(0), 1).to(mask.device)], dim=1).type_as(positions)
                     mask[:, 0] = 1
                     positions = (positions * mask)
                     positions[positions == 0] = self.max_positions - 1
@@ -65,7 +65,7 @@ class LearnedPositionalEmbedding(nn.Embedding):
                         F.pad(torch.randperm(i - 2) + 3, (0, 1), value=i+1),
                         (0, mask.size(-1) - i), value=self.padding_idx)
                         for i in torch.count_nonzero(mask, dim=-1)]).type_as(positions)
-                    positions = torch.cat([torch.ones(mask.size(0), 1) + 1, positions], dim=1).long()
+                    positions = torch.cat([torch.ones(mask.size(0), 1).to(positions.device) + 1, positions], dim=1).long()
 
         return F.embedding(
             positions,
