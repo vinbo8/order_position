@@ -55,7 +55,7 @@ def compute_perplexity(args, sentences):
                     # add token_to_mask_idx *  (len(tokens) - 2) to get index right
                     all_token_masks_idxs.append(token_to_mask_idx)
 
-            sents_all_tokens_masked = torch.stack(sents_all_tokens_masked)
+            sents_all_tokens_masked = torch.stack(sents_all_tokens_masked).to(device)
             features = roberta.model(src_tokens=sents_all_tokens_masked, device=device)
             logits = features[0].squeeze() #, token_to_mask_idx, :].squeeze()
             # calc loss
