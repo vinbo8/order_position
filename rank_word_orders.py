@@ -40,37 +40,43 @@ def compute_perplexity(args, sentences):
 
     all_sent_ppl = []
 
-    for sentence in sentences:
-        sentence_loss = 0.
+    for sent_idx, sentence in enumerate(sentences):
         with torch.no_grad():
-
             print(sentence)
             tokens = roberta.encode(sentence)
+            sents_all_tokens_masked = []
+            all_token_masks_idxs = []
+
             for token_to_mask_idx, _ in enumerate(tokens):
                 if token_to_mask_idx != 0 and token_to_mask_idx != len(tokens) - 1:
                     new_tokens = tokens.clone()
                     new_tokens[token_to_mask_idx] = mask_idx
-                    #print(tokens, "tokens")
-                    #print(new_tokens, ' new_tokens')
-                    #print(mask_idx, 'mask_idx')
-                    features = roberta.model(src_tokens=new_tokens.unsqueeze(0))
-                    logits = features[0].squeeze() #, token_to_mask_idx, :].squeeze()
-                    #calc loss
-                    #print(logits.shape, ' lshape')
-                    # reshape lm_logits from (N,T,C) to (N*T,C)
-                    lm_logits = logits.view(-1, logits.size(-1))
-                    lm_targets = tokens.view(-1)
-                    #lm_targets = torch.tensor([-100 if t != mask_idx else tokens[token_to_mask_idx] for t in new_tokens]).view(-1)
-                    #print(lm_targets, " lm_targets")
-                    lm_loss_all = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad())#.item()
-                    #print(lm_loss_all, " lm_loss_all")
-                    lm_loss_target = lm_loss_all[token_to_mask_idx].item()
-                    #print(lm_loss_target, "lm_loss_target")
-                    sentence_loss += lm_loss_target
+                    sents_all_tokens_masked.append(new_tokens)
+                    # add token_to_mask_idx *  (len(tokens) - 2) to get index right
+                    all_token_masks_idxs.append(token_to_mask_idx)
 
-            ppl = np.exp(sentence_loss / len(tokens))
-            print(ppl, ' :per sent. perplexity')
-            all_sent_ppl.append(ppl)
+            sents_all_tokens_masked = torch.stack(sents_all_tokens_masked)
+            features = roberta.model(src_tokens=sents_all_tokens_masked, device=device)
+            logits = features[0].squeeze() #, token_to_mask_idx, :].squeeze()
+            # calc loss
+            # reshape lm_logits from (N,T,C) to (N*T,C) and repeat targets along batch dim
+            lm_logits = logits.view(-1, logits.size(-1))
+            lm_targets =  tokens.repeat(logits.shape[0],1)
+            lm_targets = lm_targets.view(-1)
+            # compute cross entropy
+            lm_loss_all = compute_cross_entropy_loss(lm_logits, lm_targets, dictionary.pad())#.item()
+            # reshape to original shape
+            lm_loss_all = lm_loss_all.reshape(logits.shape[0], logits.shape[1])
+            #iterate over sents extract relevant losses
+            lm_loss_target = []
+            for s_idx in range(lm_loss_all.shape[0]):
+                lm_loss_target.append(lm_loss_all[s_idx, all_token_masks_idxs[s_idx]].item())
+
+            #divide by sent len / take mean
+            #lm_loss_target  = [l / len(tokens) - 2 for l in lm_loss_target]
+            sent_ppl = np.exp(np.mean(lm_loss_target))
+            print(sent_ppl, ' :per sent. perplexity')
+            all_sent_ppl.append(sent_ppl)
     mean_ppl = mean(all_sent_ppl)
     print(mean_ppl, " :all_sent_mean_ppl")
     return mean_ppl
