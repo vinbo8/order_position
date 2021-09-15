@@ -92,12 +92,13 @@ def compute_perplexity(args, sentences_sublist_idxs):
             ppl_dict[idx] = ppl_val
         ppl_pairs = [(k, ppl_dict[k]) for k in sorted(ppl_dict, key=ppl_dict.get)]
         #print(ppl_pairs, " ppl_pairs")
-        orig_rank = [pair_idx for pair_idx, pair in enumerate(ppl_pairs)][0] / len(ppl_list)
+        orig_rank = [pair_idx for pair_idx, pair in enumerate(ppl_pairs) if pair[0] == 0][0] / len(ppl_list)
+        #print(orig_rank, ' orig_rank')
         all_orig_ranks.append(orig_rank)
 
     mean_ppl = mean(all_sent_ppl)
     print(mean_ppl, " :all_sent_mean_ppl")
-    mean_orig_rank = mean(all_orig_ranks)
+    mean_orig_rank = np.mean(all_orig_ranks)
     print(mean_orig_rank, " :mean_orig_rank")
 
     return mean_ppl, all_sent_ppl
