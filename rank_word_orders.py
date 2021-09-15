@@ -111,6 +111,8 @@ def main():
 
     arguments = parser.parse_args();
 
+    #model
+    print(arguments.model_path, ' :model')
     # load dataset
     dataset_file = open(arguments.dataset_path, 'r').read()
     # pass to shuffle function, returns list of lists where inner list is of all perms per sentence
