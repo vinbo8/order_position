@@ -8,7 +8,7 @@ from fairseq.data import Dictionary
 import numpy as np
 import copy
 from utils.rand_word_order_utils import ud_permute
-
+from scipy.stats import spearmanr
 
 def compute_cross_entropy_loss(logits, targets, ignore_index=-100):
     """
@@ -79,13 +79,13 @@ def compute_perplexity(args, sentences):
             all_sent_ppl.append(sent_ppl)
     mean_ppl = mean(all_sent_ppl)
     print(mean_ppl, " :all_sent_mean_ppl")
-    return mean_ppl
+    return mean_ppl, all_sent_ppl
 
 def main():
     parser = argparse.ArgumentParser(description="generate token embeddings from corpus");
     parser.add_argument('-d', "--dataset_path", type=str);
     parser.add_argument('-m', "--model_path", type=str);
-    parser.add_argument('-l', "--max_sentence_len", type=int, default=100);
+    parser.add_argument('-l', "--max_sentence_len", type=int, default=10);
     parser.add_argument('-no', "--no_sentences", type=int, default=100);
 
     arguments = parser.parse_args();
@@ -93,13 +93,17 @@ def main():
     # load dataset
     dataset_file = open(arguments.dataset_path, 'r').read()
     # pass to shuffle function, returns list of lists where inner list is of all perms per sentence
-    sentence_permutations = ud_permute(dataset_file, no_sentences=arguments.no_sentences,
+    sentence_permutations, leven_distances_to_orig = ud_permute(dataset_file, no_sentences=arguments.no_sentences,
                                        sentence_len_limit=arguments.max_sentence_len)
     # flatten list for now since we just compute a final perp score and turn each sublist into a string
     sentences = [' '.join(sent_list) for sublist in sentence_permutations for sent_list in sublist]
     print(len(sentences), ' no sents')
     #get ppl
-    compute_perplexity(arguments, sentences)
+    mean_ppl, all_sent_ppl = compute_perplexity(arguments, sentences)
+    #compute correlation between ppl and levenstein distance
+    corr = spearmanr(all_sent_ppl, leven_distances_to_orig)
+    print(corr, " :correlation of perplexity to leven distance to orig order.")
+
 
 
 
