@@ -95,9 +95,10 @@ def main():
     # pass to shuffle function, returns list of lists where inner list is of all perms per sentence
     sentence_permutations, leven_distances_to_orig = ud_permute(dataset_file, no_sentences=arguments.no_sentences,
                                        sentence_len_limit=arguments.max_sentence_len)
+    print(len(sentence_permutations), ' no sents')
     # flatten list for now since we just compute a final perp score and turn each sublist into a string
     sentences = [' '.join(sent_list) for sublist in sentence_permutations for sent_list in sublist]
-    print(len(sentences), ' no sents')
+    print(len(sentences), ' no sents flattened')
     #get ppl
     mean_ppl, all_sent_ppl = compute_perplexity(arguments, sentences)
     #compute correlation between ppl and levenstein distance
