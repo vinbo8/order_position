@@ -14,8 +14,6 @@ def ud_permute(ud_data, sentence_len_limit=None, no_sentences=None,
     for sentence in sentences:
         #limit sentence len and no sents
         if len(sentence) < sentence_len_limit and len(all_permuted_sentences) < no_sentences:
-            print(len(sentence))
-            print(sentence, 'sentence')
             # just randomly shuffle all toks irrespective of heirarch. structure
             if permutation_type == 'linear':
                 # sent to list of tokens
@@ -26,7 +24,7 @@ def ud_permute(ud_data, sentence_len_limit=None, no_sentences=None,
                 if permutation_limit:
                     permutation_list = random.sample(permutation_list, permutation_limit)
                 all_permuted_sentences.append(permutation_list)
-        return all_permuted_sentences
+    return all_permuted_sentences
 
 
 
