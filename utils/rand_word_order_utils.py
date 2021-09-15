@@ -12,6 +12,7 @@ def ud_permute(ud_data, sentence_len_limit=None, no_sentences=None,
     # prep
     all_permuted_sentences = []
     leven_distances_to_orig = []
+
     # iterate over all sentences
     for sentence in sentences:
         #limit sentence len and no sents

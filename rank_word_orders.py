@@ -1,5 +1,5 @@
 from roberta.helpers import load_shuffled_model
-from fairseq import utils
+from collections import defaultdict
 import torch.nn.functional as F
 import argparse
 import torch
@@ -27,8 +27,12 @@ def compute_cross_entropy_loss(logits, targets, ignore_index=-100):
     )
     return loss
 
-def compute_perplexity(args, sentences):
+def compute_perplexity(args, sentences_sublist_idxs):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    #separate sents and sublist ids
+    sentences = [s_s[1] for s_s in sentences_sublist_idxs]
+    sublist_idxs = [s_s[0] for s_s in sentences_sublist_idxs]
 
     # Load pre-trained model (weights) and extract reps
     roberta = load_shuffled_model(args.model_path)
@@ -39,10 +43,9 @@ def compute_perplexity(args, sentences):
     mask_idx = dictionary.add_symbol("<mask>")
 
     all_sent_ppl = []
-
     for sent_idx, sentence in enumerate(sentences):
         with torch.no_grad():
-            print(sentence)
+            #print(sentence)
             tokens = roberta.encode(sentence)
             sents_all_tokens_masked = []
             all_token_masks_idxs = []
@@ -75,10 +78,28 @@ def compute_perplexity(args, sentences):
             #divide by sent len / take mean
             #lm_loss_target  = [l / len(tokens) - 2 for l in lm_loss_target]
             sent_ppl = np.exp(np.mean(lm_loss_target))
-            print(sent_ppl, ' :per sent. perplexity')
+            #fprint(sent_ppl, ' :per sent. perplexity')
             all_sent_ppl.append(sent_ppl)
+
+    # compute rank of original sent with respect to all others, first sent in each sublist is the orig
+    all_ppl_per_sent = defaultdict(list)
+    all_orig_ranks = []
+    for sidx, ppl in enumerate(all_sent_ppl):
+        all_ppl_per_sent[sublist_idxs[sidx]].append(ppl)
+    for sublist_idx, ppl_list in all_ppl_per_sent.items():
+        ppl_dict = {}
+        for idx, ppl_val in enumerate(ppl_list):
+            ppl_dict[idx] = ppl_val
+        ppl_pairs = [(k, ppl_dict[k]) for k in sorted(ppl_dict, key=ppl_dict.get)]
+        #print(ppl_pairs, " ppl_pairs")
+        orig_rank = [pair_idx for pair_idx, pair in enumerate(ppl_pairs)][0] / len(ppl_list)
+        all_orig_ranks.append(orig_rank)
+
     mean_ppl = mean(all_sent_ppl)
     print(mean_ppl, " :all_sent_mean_ppl")
+    mean_orig_rank = mean(all_orig_ranks)
+    print(mean_orig_rank, " :mean_orig_rank")
+
     return mean_ppl, all_sent_ppl
 
 def main():
@@ -97,13 +118,15 @@ def main():
                                        sentence_len_limit=arguments.max_sentence_len)
     print(len(sentence_permutations), ' no sents')
     # flatten list for now since we just compute a final perp score and turn each sublist into a string
-    sentences = [' '.join(sent_list) for sublist in sentence_permutations for sent_list in sublist]
+    sentences = [(sublist_idx, ' '.join(sent_list)) for sublist_idx, sublist in enumerate(sentence_permutations) for sent_list in sublist]
     print(len(sentences), ' no sents flattened')
     #get ppl
     mean_ppl, all_sent_ppl = compute_perplexity(arguments, sentences)
     #compute correlation between ppl and levenstein distance
     corr = spearmanr(all_sent_ppl, leven_distances_to_orig)
     print(corr, " :correlation of perplexity to leven distance to orig order.")
+    #compute rank of original sent
+
 
 
 
