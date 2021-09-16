@@ -51,6 +51,7 @@ class LearnedPositionalEmbedding(nn.Embedding):
                 positions = utils.make_positions(
                     input, self.padding_idx, onnx_trace=self.onnx_trace, scramble=scramble
                 )
+
         return F.embedding(
             positions,
             self.weight,
