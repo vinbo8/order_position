@@ -10,6 +10,7 @@ import copy
 from utils.rand_word_order_utils import ud_permute
 from scipy.stats import spearmanr
 
+
 def compute_cross_entropy_loss(logits, targets, ignore_index=-100):
     """
     Function to compute the cross entropy loss. The default value of
@@ -76,7 +77,7 @@ def compute_perplexity(args, sentences_sublist_idxs):
                 lm_loss_target.append(lm_loss_all[s_idx, all_token_masks_idxs[s_idx]].item())
 
             #divide by sent len / take mean
-            #lm_loss_target  = [l / len(tokens) - 2 for l in lm_loss_target]
+            lm_loss_target  = [l / len(tokens) - 2 for l in lm_loss_target]
             sent_ppl = np.exp(np.mean(lm_loss_target))
             #fprint(sent_ppl, ' :per sent. perplexity')
             all_sent_ppl.append(sent_ppl)
@@ -117,7 +118,7 @@ def main():
     # load dataset
     dataset_file = open(arguments.dataset_path, 'r').read()
     # pass to shuffle function, returns list of lists where inner list is of all perms per sentence
-    sentence_permutations, leven_distances_to_orig = ud_permute(dataset_file, no_sentences=arguments.no_sentences,
+    sentence_permutations, leven_distances_to_orig, bleu_to_orug = ud_permute(dataset_file, no_sentences=arguments.no_sentences,
                                        sentence_len_limit=arguments.max_sentence_len)
     print(len(sentence_permutations), ' no sents')
     # flatten list for now since we just compute a final perp score and turn each sublist into a string
@@ -128,10 +129,9 @@ def main():
     #compute correlation between ppl and levenstein distance
     corr = spearmanr(all_sent_ppl, leven_distances_to_orig)
     print(corr, " :correlation of perplexity to leven distance to orig order.")
-    #compute rank of original sent
-
-
-
+    #compute correlation between ppl and bleu-4
+    corr = spearmanr(all_sent_ppl, bleu_to_orug)
+    print(corr, " :correlation of perplexity to bleu to orig order.")
 
 
 if __name__ == '__main__':
