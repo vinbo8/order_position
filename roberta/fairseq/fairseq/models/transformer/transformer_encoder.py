@@ -138,7 +138,7 @@ class TransformerEncoderBase(FairseqEncoder):
         if self.embed_positions is not None:
             # to_scramble = self.cfg.scramble_position if self.cfg.scramble_partition == 'all' \
             #     else self.cfg.scramble_position & (self.training ^ (self.cfg.scramble_partition == 'ft'))
-            if 'gaussian_noise' in self.cfg and self.cfg.gaussian_noise and not self.training:
+            if 'gaussian_noise' in dir(self.cfg) and self.cfg.gaussian_noise and not self.training:
                 x = embed + self.embed_positions(src_tokens, scramble=False)
         if self.layernorm_embedding is not None:
             x = self.layernorm_embedding(x)

@@ -482,6 +482,8 @@ class Trainer(object):
                 from torch import nn
                 if 'nopos' in self.cfg['model'].restore_file:
                     if self.cfg.model.invert_position:
+                        state["model"]["encoder.sentence_encoder.embed_positions.weight"] = \
+                            self.model.encoder.sentence_encoder.embed_positions.weight
                         embed_dim = self.model.encoder.sentence_encoder.embed_positions.weight.size(-1)
                         if self.cfg.model.gaussian_noise and self.cfg.model.gaussian_noise != "default":
                             mean, std = self.cfg.model.gaussian_noise.split(",")
