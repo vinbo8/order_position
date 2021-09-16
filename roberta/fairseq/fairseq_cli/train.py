@@ -528,7 +528,7 @@ def cli_main(
     group.add_argument("--scramble-tokens", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
     group.add_argument("--preserve-edge", choices=["both", "bos", "eos", "none"], default="none")
-    group.add_argument("--gaussian-noise", type="str")
+    group.add_argument("--gaussian-noise", type=str)
 
     args = options.parse_args_and_arch(parser, modify_parser=modify_parser)
     assert not (args.scramble_position and args.scramble_tokens)

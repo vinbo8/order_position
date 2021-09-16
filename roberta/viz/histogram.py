@@ -11,7 +11,7 @@ if __name__ == '__main__':
     num_samples = 500
     map_width = 32
     embeds = ['roberta.base.orig', 'roberta.base.shuffle.n1']
-    dims = [0]
+    dims = [0] + random.sample((2, 514), 9)
     fig = make_subplots(cols=len(dims), rows=2, row_titles=['Base', '1-gram shuffled'], column_titles=list(map(str, dims)), shared_yaxes=True, vertical_spacing=0)
 
     for r, embed in enumerate(embeds):
@@ -20,11 +20,8 @@ if __name__ == '__main__':
         position_embed = position_embed.detach()
 
         palette = qualitative.Safe
-        pca = PCA(n_components=2, svd_solver='full')
-        out = pca.fit_transform(position_embed.numpy())
-        fig.add_trace(go.Scatter(x=out[:, 0], y=out[:, 1], mode='markers'), row=r+1, col=1)
-        # for c, dim in enumerate(dims):
-        #     fig.add_trace(go.Histogram(x=position_embed[dim].numpy()), row=r+1, col=c+1)
+        for c, dim in enumerate(dims):
+            fig.add_trace(go.Histogram(x=position_embed[dim].numpy()), row=r+1, col=c+1)
         # print(shapiro(position_embed.flatten().numpy()))
 
     fig.update_layout(template='plotly_white',
