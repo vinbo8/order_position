@@ -479,10 +479,13 @@ class Trainer(object):
 
             # load model parameters
             try:
+                from torch import nn
                 if 'nopos' in self.cfg['model'].restore_file:
                     if self.cfg.model.invert_position:
-                        state["model"]["encoder.sentence_encoder.embed_positions.weight"] = \
-                            self.model.encoder.sentence_encoder.embed_positions.weight
+                        embed_dim = self.model.encoder.sentence_encoder.embed_positions.weight.size(-1)
+                        mean, std = self.cfg.model.gaussian_noise.split(",") if self.cfg.model.gaussian_noise else embed_dim ** -0.5
+                        nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
+                                        mean=mean, std=std)
                 else:
                     if self.cfg.model.invert_position:
                         del state["model"]["encoder.sentence_encoder.embed_positions.weight"]
@@ -494,7 +497,6 @@ class Trainer(object):
                 if self.cfg.model.reset_position:
                     logger.info("resetting position")
                     embed_dim = state["model"]["encoder.sentence_encoder.embed_positions.weight"].size(-1)
-                    from torch import nn
                     nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
                                     mean=0, std=embed_dim ** -0.5)
 

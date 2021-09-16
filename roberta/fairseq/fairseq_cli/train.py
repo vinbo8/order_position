@@ -130,7 +130,7 @@ def main(cfg: FairseqConfig) -> None:
         )
     )
 
-    if cfg.model.perturb == 'random_noise':
+    if cfg.model.gaussian_noise:
         model.encoder.sentence_encoder.embed_positions.weight.requires_grad = False
 
     # Load valid dataset (we load training data below, based on the latest checkpoint)
@@ -528,8 +528,7 @@ def cli_main(
     group.add_argument("--scramble-tokens", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
     group.add_argument("--preserve-edge", choices=["both", "bos", "eos", "none"], default="none")
-    group.add_argument("--perturb", choices=["none", "random_noise", "ablate_intermediate", "scramble_intermediate"],
-                       default="none")
+    group.add_argument("--gaussian-noise", type="str")
 
     args = options.parse_args_and_arch(parser, modify_parser=modify_parser)
     assert not (args.scramble_position and args.scramble_tokens)
@@ -538,7 +537,7 @@ def cli_main(
     if args.reset_position:
         assert 'nopos' not in args.restore_file
 
-    if args.perturb != "none":
+    if args.gaussian_noise:
         assert 'nopos' in args.restore_file and args.invert_position
 
     if args.scramble_position:

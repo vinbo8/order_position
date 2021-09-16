@@ -71,7 +71,6 @@ class TransformerEncoderBase(FairseqEncoder):
                 embed_dim,
                 self.padding_idx,
                 learned=cfg.encoder.learned_pos,
-                perturb=cfg.perturb,
             )
             if not cfg.no_token_positional_embeddings
             else None
@@ -120,24 +119,25 @@ class TransformerEncoderBase(FairseqEncoder):
         self, src_tokens, token_embedding: Optional[torch.Tensor] = None
     ):
         # scramble if necessary
-        partition = self.cfg.scramble_partition
-        if self.cfg.scramble_tokens and (partition == "all" or not (self.training ^ (partition == "ft"))):
-            mask = (src_tokens > 2)
-            safe_mask = (src_tokens != 1)
-            index = torch.stack([F.pad(torch.randperm(i)+1, (1, mask.size(-1)-i-1), value=0)
-                                 for i in torch.count_nonzero(mask, dim=-1)]).type_as(src_tokens)
-            src_tokens = torch.gather(src_tokens, 1, index).type_as(src_tokens)
-            src_tokens = ((src_tokens - 2) * mask) + 2
-            src_tokens = ((src_tokens - 1) * safe_mask) + 1
-            src_tokens[:, 0] = 0
+        if "scramble_partition" in dir(self.cfg):
+            partition = self.cfg.scramble_partition
+            if self.cfg.scramble_tokens and (partition == "all" or not (self.training ^ (partition == "ft"))):
+                mask = (src_tokens > 2)
+                safe_mask = (src_tokens != 1)
+                index = torch.stack([F.pad(torch.randperm(i)+1, (1, mask.size(-1)-i-1), value=0)
+                                     for i in torch.count_nonzero(mask, dim=-1)]).type_as(src_tokens)
+                src_tokens = torch.gather(src_tokens, 1, index).type_as(src_tokens)
+                src_tokens = ((src_tokens - 2) * mask) + 2
+                src_tokens = ((src_tokens - 1) * safe_mask) + 1
+                src_tokens[:, 0] = 0
 
         # embed tokens and positions
         if token_embedding is None:
             token_embedding = self.embed_tokens(src_tokens)
         x = embed = self.embed_scale * token_embedding
         if self.embed_positions is not None:
-            to_scramble = self.cfg.scramble_position if self.cfg.scramble_partition == 'all' \
-                else self.cfg.scramble_position & (self.training ^ (self.cfg.scramble_partition == 'ft'))
+            # to_scramble = self.cfg.scramble_position if self.cfg.scramble_partition == 'all' \
+            #     else self.cfg.scramble_position & (self.training ^ (self.cfg.scramble_partition == 'ft'))
             x = embed + self.embed_positions(src_tokens, scramble=False)
         if self.layernorm_embedding is not None:
             x = self.layernorm_embedding(x)
