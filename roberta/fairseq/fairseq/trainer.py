@@ -483,7 +483,10 @@ class Trainer(object):
                 if 'nopos' in self.cfg['model'].restore_file:
                     if self.cfg.model.invert_position:
                         embed_dim = self.model.encoder.sentence_encoder.embed_positions.weight.size(-1)
-                        mean, std = self.cfg.model.gaussian_noise.split(",") if self.cfg.model.gaussian_noise else embed_dim ** -0.5
+                        if self.cfg.model.gaussian_noise and self.cfg.model.gaussian_noise != "default":
+                            mean, std = self.cfg.model.gaussian_noise.split(",")
+                        else:
+                            mean, std = 0, embed_dim ** -0.5
                         nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
                                         mean=mean, std=std)
                 else:
