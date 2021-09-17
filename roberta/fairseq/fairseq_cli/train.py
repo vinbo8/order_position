@@ -541,7 +541,7 @@ def cli_main(
         assert 'nopos' in args.restore_file and args.invert_position
 
     if args.scramble_position:
-        logger.info(f"scrambling position at {args.scramble_partition}")
+        logger.info(f"scrambling position")
 
     if args.scramble_tokens:
         logger.info(f"scrambling tokens at {args.scramble_partition}")

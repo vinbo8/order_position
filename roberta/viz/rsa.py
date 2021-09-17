@@ -14,12 +14,12 @@ from transformers import BertTokenizer, BertModel
 
 if __name__ == '__main__':
     experiment = 'biling'
-    embeds = {'orig': None, 'shuffle.n1': None, 'shuffle.n2': None, 'shuffle.corpus': None, 'noise': None}
+    embeds = {'orig': None, 'shuffle.n1': None, 'shuffle.n2': None, 'shuffle.n4': None, 'shuffle.corpus': None, 'noise': None}
     num_embeds = len(embeds.keys())
-    fig = make_subplots(rows=1, cols=1)
+    fig = make_subplots(rows=1, cols=len(embeds.keys()), column_titles=list(embeds.keys()))
     corpus = 'wiki'
     map_width = 64
-    rows = 32
+    rows = 514
     for r, embed in enumerate(embeds.keys()):
         if embed == 'noise':
             position_embed = np.random.normal(size=(rows, 514))
@@ -31,17 +31,20 @@ if __name__ == '__main__':
             for j in [0] + list(range(2, rows)):
                 embeds[embed][i, j] = pearsonr(position_embed[i], position_embed[j])[0]
 
-    rdm = np.zeros((num_embeds, num_embeds))
-    for m, i in enumerate(embeds.keys()):
-        for n, j in enumerate(embeds.keys()):
-            x, y = np.triu_indices(rows, 1)
-            flat_i = embeds[i][x, y]
-            flat_j = embeds[j][x, y]
-            rdm[m, n] = kendalltau(flat_i, flat_j)[0]
+        heatmap = go.Heatmap(z=embeds[embed], x=list(range(rows)), y=list(range(rows)), zmin=-1.0, zmax=1.0,
+                             colorscale=diverging.RdBu)
+        fig.add_trace(heatmap, row=1, col=r+1)
 
-    heatmap = go.Heatmap(z=rdm, zmin=0, zmax=1.0, colorscale=sequential.Bluyl,
-                         x=list(embeds.keys()), y=list(embeds.keys()))
-    fig.add_trace(heatmap, row=1, col=1)
-    fig.update_layout(yaxis=dict(autorange='reversed'))
+    # fig.update_layout(yaxis=dict(autorange='reversed'))
+    # rdm = np.zeros((num_embeds, num_embeds))
+    # for m, i in enumerate(embeds.keys()):
+    #     for n, j in enumerate(embeds.keys()):
+    #         x, y = np.triu_indices(rows, 1)
+    #         flat_i = embeds[i][x, y]
+    #         flat_j = embeds[j][x, y]
+    #         rdm[m, n] = kendalltau(flat_i, flat_j)[0]
+    #
+    # heatmap = go.Heatmap(z=rdm, zmin=0, zmax=1.0, colorscale=sequential.Bluyl,
+    #                      x=list(embeds.keys()), y=list(embeds.keys()))
+    # fig.add_trace(heatmap, row=1, col=1)
     fig.show()
-    print(rdm)

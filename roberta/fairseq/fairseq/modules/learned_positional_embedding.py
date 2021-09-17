@@ -20,9 +20,10 @@ class LearnedPositionalEmbedding(nn.Embedding):
     position ids are passed to the forward function.
     """
 
-    def __init__(self, num_embeddings: int, embedding_dim: int, padding_idx: int):
+    def __init__(self, num_embeddings: int, embedding_dim: int, padding_idx: int, scramble: bool):
         super().__init__(num_embeddings, embedding_dim, padding_idx)
         self.onnx_trace = False
+        self.scramble = scramble
         if self.padding_idx is not None:
             self.max_positions = self.num_embeddings - self.padding_idx - 1
         else:
@@ -33,7 +34,6 @@ class LearnedPositionalEmbedding(nn.Embedding):
         input: Tensor,
         incremental_state: Optional[Dict[str, Dict[str, Optional[Tensor]]]] = None,
         positions: Optional[Tensor] = None,
-        scramble: bool = False,
     ):
         """Input is expected to be of size [bsz x seqlen]."""
         assert (positions is None) or (
@@ -48,9 +48,15 @@ class LearnedPositionalEmbedding(nn.Embedding):
                     (1, 1), device=input.device, dtype=input.dtype
                 ).fill_(int(self.padding_idx + input.size(1)))
             else:
-                positions = utils.make_positions(
-                    input, self.padding_idx, onnx_trace=self.onnx_trace, scramble=scramble
-                )
+                if self.scramble:
+                    mask = input.ne(self.padding_idx).int()
+                    positions = torch.stack([F.pad(
+                        torch.randperm(self.max_positions - 2)[:i] + 2, (0, mask.size(-1) - i), value=self.padding_idx
+                    ) for i in torch.count_nonzero(mask, dim=-1)]).type_as(mask).long()
+                else:
+                    positions = utils.make_positions(
+                        input, self.padding_idx, onnx_trace=self.onnx_trace
+                    )
 
         return F.embedding(
             positions,
