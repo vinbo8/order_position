@@ -2,6 +2,7 @@ from conllu import parse
 import itertools
 import random
 from Levenshtein import distance as levenshtein_distance
+import nltk
 
 # ------------------------------------- functions --------------------------------------
 
@@ -12,6 +13,7 @@ def ud_permute(ud_data, sentence_len_limit=None, no_sentences=None,
     # prep
     all_permuted_sentences = []
     leven_distances_to_orig = []
+    bleu_to_orig = []
 
     # iterate over all sentences
     for sentence in sentences:
@@ -31,7 +33,9 @@ def ud_permute(ud_data, sentence_len_limit=None, no_sentences=None,
                 for permutation in permutation_list:
                     ld = levenshtein_distance(' '.join(token_list), ' '.join(permutation))
                     leven_distances_to_orig.append(ld)
-    return all_permuted_sentences, leven_distances_to_orig
+                    bs = nltk.translate.bleu_score.sentence_bleu(' '.join(token_list), ' '.join(permutation))
+                    bleu_to_orig.append(bs)
+    return all_permuted_sentences, leven_distances_to_orig, bleu_to_orig
 
 
 
