@@ -23,7 +23,7 @@ TASKS=$2 # QQP
 
 if [ "$TASKS" = "ALL" ]
 then
-  TASKS="QQP MNLI QNLI MRPC RTE STS-B SST-2 CoLA"
+  TASKS="QQP MNLI MED QNLI MRPC RTE STS-B SST-2 CoLA"
 fi
 
 for TASK in $TASKS
@@ -43,6 +43,13 @@ do
   elif [ "$TASK" = "MNLI" ]
   then
     SPLITS="train dev_matched dev_mismatched test_matched test_mismatched"
+    INPUT_COLUMNS=( 9 10 )
+    TEST_INPUT_COLUMNS=( 9 10 )
+    DEV_LABEL_COLUMN=16
+    LABEL_COLUMN=12
+  elif [ "$TASK" = "MED" ]
+  then
+    SPLITS="test_matched"
     INPUT_COLUMNS=( 9 10 )
     TEST_INPUT_COLUMNS=( 9 10 )
     DEV_LABEL_COLUMN=16
