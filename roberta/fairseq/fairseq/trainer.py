@@ -505,9 +505,14 @@ class Trainer(object):
                     nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
                                     mean=0, std=embed_dim ** -0.5)
 
+                self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad = not self.cfg.model.freeze_position
+
                 self.model.load_state_dict(
                     state["model"], strict=True, model_cfg=self.cfg.model
                 )
+
+                logger.info(f"embeddings require_grad: {self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad}")
+
                 # save memory for later steps
                 del state["model"]
                 if utils.has_parameters(self.get_criterion()):
