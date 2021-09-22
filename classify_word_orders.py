@@ -34,6 +34,12 @@ def classify(args, all_examples, all_labels):
     dev_size = math.ceil(len(all_sent_encodings) / 6)
     train_features, train_labels = np.vstack(all_sent_encodings[:-dev_size]), all_labels[:-dev_size]
     dev_features, dev_labels = np.vstack(all_sent_encodings[-dev_size:]), all_labels[-dev_size:]
+    # print stats
+    o_count_train = len([l for l in train_labels if l == 'o'])
+    p_count_train = len([l for l in train_labels if l == 'p'])
+    o_count_dev = len([l for l in dev_labels if l == 'o'])
+    p_count_dev = len([l for l in dev_labels if l == 'p'])
+    print("O-train: {} P-train: {}  O-dev: {} P-dev: {} !".format(o_count_train, p_count_train, o_count_dev, p_count_dev))
     #train and eval
     print(train_features.shape, "train_features ")
     clf = LogisticRegression(random_state=42).fit(train_features, train_labels)
