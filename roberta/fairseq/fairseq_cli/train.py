@@ -525,6 +525,7 @@ def cli_main(
     group.add_argument("--log-lca", action="store_true")
     group.add_argument("--lca-log-file", action="store")
     group.add_argument("--scramble-position", action="store_true")
+    group.add_argument("--freeze-position", action="store_true")
     group.add_argument("--scramble-tokens", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
     group.add_argument("--preserve-edge", choices=["both", "bos", "eos", "none"], default="none")
@@ -541,7 +542,7 @@ def cli_main(
         assert 'nopos' in args.restore_file and args.invert_position
 
     if args.scramble_position:
-        logger.info(f"scrambling position at {args.scramble_partition}")
+        logger.info(f"scrambling position")
 
     if args.scramble_tokens:
         logger.info(f"scrambling tokens at {args.scramble_partition}")
