@@ -23,6 +23,9 @@ def classify(args, all_examples, all_labels):
     for sent_idx, sentence in enumerate(all_examples):
         with torch.no_grad():
             tokens = roberta.encode(sentence)
+            if args.shuffle_bpe:
+                idx = torch.randperm(tokens.nelement())
+                tokens = tokens.view(-1)[idx].view(tokens.size())
             features = roberta.extract_features(tokens)
             features = features.squeeze(0).mean(dim=0)
             all_sent_encodings.append(features.cpu().detach().numpy())
@@ -46,8 +49,7 @@ def main():
     parser.add_argument('-m', "--model_path", type=str);
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10);
     parser.add_argument('-p', "--no_perms", type=int, default=1);
-
-
+    parser.add_argument('-s', "--shuffle_bpe", action='store_true', default=False);
     arguments = parser.parse_args();
 
     #model
