@@ -47,10 +47,11 @@ def classify(args, all_examples, all_labels):
     #train and eval
     print(train_features.shape, "train_features ")
     clf = LinearRegression().fit(train_features, train_labels)
-    #clf.predict(dev_features)
-    acc = clf.score(dev_features, dev_labels)
-    print(acc, ": acc")
-
+    r2 = clf.score(dev_features, dev_labels)
+    print(r2, ": r2")
+    preds = clf.predict(dev_features)
+    avg_dif = np.mean(np.abs(preds-dev_labels))
+    print(avg_dif, ": avg_dif")
     #return mean_ppl, all_sent_ppl
 
 def main():
