@@ -31,15 +31,18 @@ def classify(args, all_examples, all_labels):
                     all_word_encodings.append(tok.vector.cpu().detach().numpy())
                 all_word_labels.extend(label_list)
         except:
-            print(sentence, ' :mis-aligned feats')
+            continue
+            #print(sentence, ' :mis-aligned feats')
 
     # make train / dev / test
     dev_size = math.ceil(len(all_word_encodings) / 6)
+    if args.control:
+        random.shuffle(all_word_labels)
     if not args.hold_out_words:
         train_features, train_labels = np.vstack(all_word_encodings[:-dev_size]), all_word_labels[:-dev_size]
         dev_features, dev_labels = np.vstack(all_word_encodings[-dev_size:]), all_word_labels[-dev_size:]
-   # else:
-        #for _ in range(dev_size):
+    #else:
+    #    for _ in range(dev_size):
 
     # print stats
     #print("O-train: {} P-train: {}  O-dev: {} P-dev: {} !".format(o_count_train, p_count_train, o_count_dev, p_count_dev))
@@ -50,8 +53,10 @@ def classify(args, all_examples, all_labels):
     r2 = clf.score(dev_features, dev_labels)
     print(r2, ": r2")
     preds = clf.predict(dev_features)
-    avg_dif = np.mean(np.abs(preds-dev_labels))
-    print(avg_dif, ": avg_dif")
+    avg_dif_abs = np.mean(np.abs(preds-dev_labels))
+    print(avg_dif_abs, ": avg_dif_abs")
+    vg_dif_squared = np.mean(np.square(preds - dev_labels))
+    print(vg_dif_squared, ": vg_dif_squared")
     #return mean_ppl, all_sent_ppl
 
 def main():
@@ -62,6 +67,7 @@ def main():
     parser.add_argument('-p', "--no_perms", type=int, default=1);
     parser.add_argument('-s', "--shuffle_bpe", action='store_true', default=False);
     parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False);
+    parser.add_argument('-c', "--control", action='store_true', default=False);
 
     arguments = parser.parse_args();
 
