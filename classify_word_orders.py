@@ -1,4 +1,5 @@
 from roberta.helpers import load_shuffled_model
+import tqdm
 from collections import defaultdict
 import torch.nn.functional as F
 import argparse
@@ -21,7 +22,7 @@ def classify(args, all_examples, all_labels):
     roberta = load_shuffled_model(args.model_path)
     roberta.eval()
     all_sent_encodings = []
-    for sent_idx, (sentence, label) in enumerate(zip(all_examples, all_labels)):
+    for sent_idx, (sentence, label) in tqdm.tqdm(enumerate(zip(all_examples, all_labels))):
         with torch.no_grad():
             tokens = roberta.encode(sentence)
             if args.shuffle_bpe and label == 'p':
