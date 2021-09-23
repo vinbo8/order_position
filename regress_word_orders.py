@@ -9,7 +9,7 @@ import numpy as np
 import random
 from utils.rand_word_order_utils import ud_load_regress, mean_confidence_interval
 from scipy.stats import spearmanr
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, RidgeCV
 from sklearn.utils import shuffle
 import math
 
@@ -68,7 +68,8 @@ def classify(args, all_examples, all_labels):
 
     #train and eval
     print(train_features.shape, "train_features ")
-    clf = LinearRegression().fit(train_features, train_labels)
+    clf = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1], cv=5).fit(train_features, train_labels)
+    #clf = LinearRegression().fit(train_features, train_labels)
     r2 = clf.score(dev_features, dev_labels)
     print(r2, ": r2")
     preds = clf.predict(dev_features)
