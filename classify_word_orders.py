@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.utils import shuffle
 import math
 
+
 def classify(args, all_examples, all_labels):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -20,15 +21,22 @@ def classify(args, all_examples, all_labels):
     roberta = load_shuffled_model(args.model_path)
     roberta.eval()
     all_sent_encodings = []
-    for sent_idx, sentence in enumerate(all_examples):
+    for sent_idx, (sentence, label) in enumerate(zip(all_examples, all_labels)):
         with torch.no_grad():
             tokens = roberta.encode(sentence)
-            if args.shuffle_bpe:
+            if args.shuffle_bpe and label == 'p':
                 #drop start and end tok 0 and 2, shuffle, then add them
                 idx = torch.randperm(tokens.nelement()-2)
                 tokens = tokens[1:-1]
                 tokens = tokens.view(-1)[idx].view(tokens.size())
                 tokens = torch.cat((torch.tensor([0]), tokens, (torch.tensor([2]))))
+            elif args.safe_shuffle and label == 'p':
+                tokens = [roberta.encode(i)[1:-1] for i in sentence.split(" ")]
+                random.shuffle(tokens)
+                tokens = [item for sublist in tokens for item in sublist]
+                tokens = torch.stack(tokens)
+                tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
+
             features = roberta.extract_features(tokens)
             features = features.squeeze(0).mean(dim=0)
             all_sent_encodings.append(features.cpu().detach().numpy())
@@ -58,38 +66,39 @@ def classify(args, all_examples, all_labels):
     #return mean_ppl, all_sent_ppl
 
 def main():
-    parser = argparse.ArgumentParser(description="generate token embeddings from corpus");
-    parser.add_argument('-d', "--dataset_path", type=str);
-    parser.add_argument('-m', "--model_path", type=str);
-    parser.add_argument('-l', "--max_sentence_len", type=int, default=10);
-    parser.add_argument('-p', "--no_perms", type=int, default=1);
-    parser.add_argument('-s', "--shuffle_bpe", action='store_true', default=False);
-    parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False);
+    parser = argparse.ArgumentParser(description="generate token embeddings from corpus")
+    parser.add_argument('-d', "--dataset_path", type=str)
+    parser.add_argument('-m', "--model_path", type=str)
+    parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
+    parser.add_argument('-p', "--no_perms", type=int, default=1)
+    parser.add_argument("--shuffle_bpe", action='store_true', default=False)
+    parser.add_argument('--safe_shuffle', action='store_true', help="shuffle tokens (not wordpieces) after BPE")
+    parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False)
 
-    arguments = parser.parse_args();
-
-    #model
-    print(arguments.model_path, ' :model')
+    arguments = parser.parse_args()
+    permutation = 'none' if arguments.shuffle_bpe or arguments.safe_shuffle else 'linear'
+    # model
+    print(f'using model {arguments.model_path}')
     # load dataset
     dataset_file = open(arguments.dataset_path, 'r').read()
     # pass to permute function, returns list of lists where inner list is of all perms per sentence
     all_examples, all_labels, leven_distances_to_orig, bleu_to_orig = ud_load_classify(dataset_file,
-        sentence_len_limit=arguments.max_sentence_len, permutation_no=arguments.no_perms)
-    print(len(all_examples), ' no examples')
-    #shuffle exmaples to mix permed and non
+        sentence_len_limit=arguments.max_sentence_len, permutation_no=arguments.no_perms, permutation_type=permutation)
+    print(f'read {len(all_examples)} examples')
+
     all_examples, all_labels = shuffle(np.array(all_examples), np.array(all_labels))
-    #classify
-    _ = classify(arguments, all_examples, all_labels)
-    #compute correlation between ppl and levenstein distance
-    #corr = spearmanr(all_sent_ppl, leven_distances_to_orig)
-    #print(corr, " :correlation of perplexity to leven distance to orig order.")
-    #compute correlation between ppl and bleu-4
-    #corr = spearmanr(all_sent_ppl, bleu_to_orig)
-    #print(corr, " :correlation of perplexity to bleu to orig order.")
+    classify(arguments, all_examples, all_labels)
+
+    # compute correlation between ppl and levenstein distance
+    # corr = spearmanr(all_sent_ppl, leven_distances_to_orig)
+    # print(corr, " :correlation of perplexity to leven distance to orig order.")
+    # compute correlation between ppl and bleu-4
+    # corr = spearmanr(all_sent_ppl, bleu_to_orig)
+    # print(corr, " :correlation of perplexity to bleu to orig order.")
 
 
 if __name__ == '__main__':
-    main();
+    main()
 
 
 
