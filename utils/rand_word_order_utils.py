@@ -79,6 +79,14 @@ def ud_load_classify(ud_data, sentence_len_limit=None,
                         leven_distances_to_orig.append(0.0)
                         bleu_to_orig.append(100.0)
 
+                elif permutation_type == 'none':
+                    token_list = [t['form'] for t in sentence]
+                    all_examples.append(' '.join(token_list))
+                    if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
+                        all_labels.append('p')
+                    else:
+                        all_labels.append('o')
+
     return all_examples, all_labels,  leven_distances_to_orig, bleu_to_orig
 
 
@@ -146,13 +154,7 @@ def ud_load_regress(ud_data, sentence_len_limit=None,
                     all_labels.append('o')
                     leven_distances_to_orig.append(0.0)
                     bleu_to_orig.append(100.0)
-            elif permutation_type == 'none':
-                token_list = [t['form'] for t in sentence]
-                all_examples.append(' '.join(token_list))
-                if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
-                    all_labels.append('p')
-                else:
-                    all_labels.append('o')
+
 
     return all_examples, all_labels,  leven_distances_to_orig, bleu_to_orig
 
