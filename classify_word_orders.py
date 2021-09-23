@@ -24,22 +24,30 @@ def classify(args, all_examples, all_labels):
         with torch.no_grad():
             tokens = roberta.encode(sentence)
             if args.shuffle_bpe:
-                idx = torch.randperm(tokens.nelement())
+                #drop start and end tok 0 and 2, shuffle, then add them
+                idx = torch.randperm(tokens.nelement()-2)
+                tokens = tokens[1:-1]
                 tokens = tokens.view(-1)[idx].view(tokens.size())
+                tokens = torch.cat((torch.tensor([0]), tokens, (torch.tensor([2]))))
             features = roberta.extract_features(tokens)
             features = features.squeeze(0).mean(dim=0)
             all_sent_encodings.append(features.cpu().detach().numpy())
 
     # make train / dev / test
     dev_size = math.ceil(len(all_sent_encodings) / 6)
-    train_features, train_labels = np.vstack(all_sent_encodings[:-dev_size]), all_labels[:-dev_size]
-    dev_features, dev_labels = np.vstack(all_sent_encodings[-dev_size:]), all_labels[-dev_size:]
+    if not args.hold_out_words:
+        train_features, train_labels = np.vstack(all_sent_encodings[:-dev_size]), all_labels[:-dev_size]
+        dev_features, dev_labels = np.vstack(all_sent_encodings[-dev_size:]), all_labels[-dev_size:]
+   # else:
+        #for _ in range(dev_size):
+
     # print stats
     o_count_train = len([l for l in train_labels if l == 'o'])
     p_count_train = len([l for l in train_labels if l == 'p'])
     o_count_dev = len([l for l in dev_labels if l == 'o'])
     p_count_dev = len([l for l in dev_labels if l == 'p'])
     print("O-train: {} P-train: {}  O-dev: {} P-dev: {} !".format(o_count_train, p_count_train, o_count_dev, p_count_dev))
+
     #train and eval
     print(train_features.shape, "train_features ")
     clf = LogisticRegression(random_state=42).fit(train_features, train_labels)
@@ -56,6 +64,8 @@ def main():
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10);
     parser.add_argument('-p', "--no_perms", type=int, default=1);
     parser.add_argument('-s', "--shuffle_bpe", action='store_true', default=False);
+    parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False);
+
     arguments = parser.parse_args();
 
     #model
