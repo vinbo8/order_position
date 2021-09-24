@@ -7,6 +7,7 @@ from fairseq.models.roberta import RobertaModel
 
 use_cuda = torch.cuda.is_available()
 
+
 def load_shuffled_model(path):
     if "nopos" in path:
         print(os.path.split(path)[0], " os.path.split(path)[0]")

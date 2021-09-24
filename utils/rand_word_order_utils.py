@@ -90,6 +90,14 @@ def ud_load_classify(ud_data, sentence_len_limit=None,
                         leven_distances_to_orig.append(0.0)
                         bleu_to_orig.append(100.0)
 
+            elif permutation_type == 'none':
+                token_list = [t['form'] for t in sentence]
+                all_examples.append(' '.join(token_list))
+                if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
+                    all_labels.append('p')
+                else:
+                    all_labels.append('o')
+
     return all_examples, all_labels,  leven_distances_to_orig, bleu_to_orig
 
 
@@ -137,6 +145,27 @@ def ud_load_regress(ud_data, sentence_len_limit=None,
                         all_labels.append(label)
                         leven_distances_to_orig.append(0.0)
                         bleu_to_orig.append(100.0)
+                # have half examples be permed
+                if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
+                    # permute
+                    #permutation_list = list(itertools.permutations(token_list))
+                    #sample permutation
+                    #permuted_example = list(random.sample(permutation_list, permutation_no)[0])
+                    random.shuffle(token_list)
+                    all_examples.append(' '.join(token_list))
+                    all_labels.append('p')
+                    # compute leven distaces
+                    #for permutation in permutation_list:
+                    ld = levenshtein_distance(' '.join(token_list), ' '.join(token_list))
+                    leven_distances_to_orig.append(ld)
+                    bs = nltk.translate.bleu_score.sentence_bleu(' '.join(token_list), ' '.join(token_list))
+                    bleu_to_orig.append(bs)
+                else:
+                    all_examples.append(' '.join(token_list))
+                    all_labels.append('o')
+                    leven_distances_to_orig.append(0.0)
+                    bleu_to_orig.append(100.0)
+
 
     return all_examples, all_labels,  leven_distances_to_orig, bleu_to_orig
 
