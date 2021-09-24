@@ -103,8 +103,7 @@ def ud_load_classify(ud_data, sentence_len_limit=None,
 
 
 def ud_load_regress(ud_data, sentence_len_limit=None,
-               shuffle_level='n1', permutation_type='linear', permutation_no=1,
-               hold_out_sents=True, hold_out_words=False):
+               shuffle_level=False, permutation_type='linear', permutation_no=1, hold_out_words=False):
     # parse data
     sentences = parse(ud_data)
     # prep
@@ -122,39 +121,17 @@ def ud_load_regress(ud_data, sentence_len_limit=None,
                 # sent to list of tokens
                 token_list = [t['form'] for t in sentence]
                 label = [n / len(token_list)  for n in range(len(token_list))]
-                if hold_out_sents:
-                    # have half examples be permed
-                    if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
-                        # permute
-                        #sample permutation
-                        if shuffle_level:
-                            c = list(zip(token_list, label))
-                            random.shuffle(c)
-                            token_list, label = zip(*c)
-                        assert len(token_list) == len(label)
-                        all_examples.append(' '.join(token_list))
-                        all_labels.append(label)
-                        # compute leven distaces
-                        #for permutation in permutation_list:
-                        ld = levenshtein_distance(' '.join(token_list), ' '.join(token_list))
-                        leven_distances_to_orig.append(ld)
-                        bs = nltk.translate.bleu_score.sentence_bleu(' '.join(token_list), ' '.join(token_list))
-                        bleu_to_orig.append(bs)
-                    else:
-                        assert len(token_list) == len(label)
-                        all_examples.append(' '.join(token_list))
-                        all_labels.append(label)
-                        leven_distances_to_orig.append(0.0)
-                        bleu_to_orig.append(100.0)
                 # have half examples be permed
                 if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
                     # permute
-                    #permutation_list = list(itertools.permutations(token_list))
                     #sample permutation
-                    #permuted_example = list(random.sample(permutation_list, permutation_no)[0])
-                    random.shuffle(token_list)
+                    if shuffle_level:
+                        c = list(zip(token_list, label))
+                        random.shuffle(c)
+                        token_list, label = zip(*c)
+                    assert len(token_list) == len(label)
                     all_examples.append(' '.join(token_list))
-                    all_labels.append('p')
+                    all_labels.append(label)
                     # compute leven distaces
                     #for permutation in permutation_list:
                     ld = levenshtein_distance(' '.join(token_list), ' '.join(token_list))
@@ -162,11 +139,11 @@ def ud_load_regress(ud_data, sentence_len_limit=None,
                     bs = nltk.translate.bleu_score.sentence_bleu(' '.join(token_list), ' '.join(token_list))
                     bleu_to_orig.append(bs)
                 else:
+                    assert len(token_list) == len(label)
                     all_examples.append(' '.join(token_list))
-                    all_labels.append('o')
+                    all_labels.append(label)
                     leven_distances_to_orig.append(0.0)
                     bleu_to_orig.append(100.0)
-
 
     return all_examples, all_labels,  leven_distances_to_orig, bleu_to_orig
 
