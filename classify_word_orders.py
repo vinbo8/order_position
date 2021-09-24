@@ -7,6 +7,7 @@ import torch
 from statistics import mean
 from fairseq.data import Dictionary
 import numpy as np
+from string import punctuation
 import random
 from utils.rand_word_order_utils import ud_load_classify
 from scipy.stats import spearmanr
@@ -32,11 +33,12 @@ def classify(args, all_examples, all_labels):
                 tokens = tokens.view(-1)[idx].view(tokens.size())
                 tokens = torch.cat((torch.tensor([0]), tokens, (torch.tensor([2]))))
             elif args.safe_shuffle and label == 'p':
-                split_with_spaces = [sentence.split()[0]] + [" " + i for i in sentence.split()[1:]]
+                sentence = sentence.split()
+                split_with_spaces = [" " + i for i in sentence[1:-1]]
                 tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
                 random.shuffle(tokens)
                 tokens = [item for sublist in tokens for item in sublist]
-                tokens = torch.stack(tokens)
+                tokens = torch.stack([roberta.encode(sentence[0])[1]] + tokens + [roberta.encode(" " + sentence[-1])[1]])
                 tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
 
             features = roberta.extract_features(tokens)
