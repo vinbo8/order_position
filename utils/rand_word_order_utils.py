@@ -6,6 +6,7 @@ import nltk
 import math
 import scipy
 import numpy as np
+import copy
 
 # ------------------------------------- functions --------------------------------------
 
@@ -168,6 +169,71 @@ def ud_load_regress(ud_data, sentence_len_limit=None,
 
     return all_examples, all_labels,  leven_distances_to_orig, bleu_to_orig
 
+
+
+def ud_load_regress_pairwise(ud_data, sentence_len_limit=None,
+               shuffle_level='n1', permutation_type='linear', sample_no=3,
+               hold_out_sents=True, hold_out_words=False):
+    # parse data
+    sentences = parse(ud_data)
+    # prep
+    all_examples = []
+    all_pairs = []
+    all_labels = []
+    leven_distances_to_orig = []
+    bleu_to_orig = []
+    total_no_sents_at_len = len([s for s in sentences if len(s) < sentence_len_limit and len(s) > 3])
+    # iterate over all sentences
+    for sentence in sentences:
+        #limit sentence len and no sents
+        if len(sentence) < sentence_len_limit and len(sentence) > 3:
+            # just randomly shuffle all toks irrespective of heirarch. structure
+            if permutation_type == 'linear':
+                # sent to list of tokens
+                token_list = [t['form'] for t in sentence]
+                original_token_list = copy.deepcopy(token_list)
+                labels = []
+                word_pairs = []
+                sent_pairs = []
+                sent_token_idxs = []
+                for s in range(sample_no):
+                   token_idx = random.sample(range(len(token_list)), 2)
+                   sent_token_idxs.append(token_idx)
+                   dist = np.abs(token_idx[0] - token_idx[1]) - 1
+                   labels.append(dist)
+                   word_pairs.append((token_list[token_idx[0]], token_list[token_idx[1]]))
+                #labels = [n / len(token_list)  for n in range(len(token_list))]
+                if hold_out_sents:
+                    # have half examples be permed
+                    if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
+                        # permute
+                        #sample permutation
+                        c = list(enumerate(token_list))
+                        random.shuffle(c)
+                        original_indices, token_list = zip(*c)
+                        #print(original_indices, "original_indices")
+                        #print(original_token_list, ' original_token_list')
+                        #print(token_list, ' token_list')
+                        all_examples.append(' '.join(token_list))
+                        for i , tidx_pairs in enumerate(sent_token_idxs):
+                            #print(original_indices.index(tidx_pairs[0]), ' original_indices.index(tidx_pairs[0])')
+                            #print(original_indices.index(tidx_pairs[1]), ' original_indices.index(tidx_pairs[1])')
+                            #print(labels[i], ' labels[i])')
+                            #print(word_pairs[i], ' word_pairs[i]')
+                            #print('\n')
+
+                            sent_pairs.append([original_indices.index(tidx_pairs[0]), original_indices.index(tidx_pairs[1])])
+                        all_pairs.append(sent_pairs)
+                        all_labels.append(labels)
+                        # compute leven distaces
+                        #for permutation in permutation_list:
+                        ld = levenshtein_distance(' '.join(token_list), ' '.join(token_list))
+                        leven_distances_to_orig.append(ld)
+                        bs = nltk.translate.bleu_score.sentence_bleu(' '.join(token_list), ' '.join(token_list))
+                        bleu_to_orig.append(bs)
+
+
+    return all_examples, all_labels,  all_pairs, leven_distances_to_orig, bleu_to_orig
 
 
 
