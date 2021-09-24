@@ -85,6 +85,7 @@ def main():
     parser.add_argument('-m', "--model_path", type=str);
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10);
     parser.add_argument('-p', "--no_perms", type=int, default=1);
+    parser.add_argument('-ss', "--shuffle_sents", action='store_true', default=False);
     parser.add_argument('-s', "--shuffle_bpe", action='store_true', default=False);
     parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False);
     parser.add_argument('-c', "--control", action='store_true', default=False);
@@ -101,7 +102,7 @@ def main():
     for _ in range(arguments.no_runs):
         # pass to permute function, returns list of lists where inner list is of all perms per sentence
         all_examples, all_labels, leven_distances_to_orig, bleu_to_orig = ud_load_regress(dataset_file,
-            sentence_len_limit=arguments.max_sentence_len, permutation_no=arguments.no_perms)
+            sentence_len_limit=arguments.max_sentence_len, permutation_no=arguments.no_perms, shuffle_level=arguments.shuffle_sents)
         print(len(all_examples), ' no examples')
         #classify
         r2, avg_dif_abs, vg_dif_squared = classify(arguments, all_examples, all_labels)

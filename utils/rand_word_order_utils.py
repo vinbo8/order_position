@@ -127,9 +127,10 @@ def ud_load_regress(ud_data, sentence_len_limit=None,
                     if len(all_examples) < math.ceil(total_no_sents_at_len / 2):
                         # permute
                         #sample permutation
-                        c = list(zip(token_list, label))
-                        random.shuffle(c)
-                        token_list, label = zip(*c)
+                        if shuffle_level:
+                            c = list(zip(token_list, label))
+                            random.shuffle(c)
+                            token_list, label = zip(*c)
                         assert len(token_list) == len(label)
                         all_examples.append(' '.join(token_list))
                         all_labels.append(label)
