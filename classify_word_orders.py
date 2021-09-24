@@ -32,7 +32,7 @@ def classify(args, all_examples, all_labels):
                 tokens = tokens.view(-1)[idx].view(tokens.size())
                 tokens = torch.cat((torch.tensor([0]), tokens, (torch.tensor([2]))))
             elif args.safe_shuffle and label == 'p':
-                split_with_spaces = [sentence.split()[0]] + [i + " " for i in sentence.split()[1:]]
+                split_with_spaces = [sentence.split()[0]] + [" " + i for i in sentence.split()[1:]]
                 tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
                 random.shuffle(tokens)
                 tokens = [item for sublist in tokens for item in sublist]
