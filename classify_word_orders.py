@@ -18,9 +18,14 @@ def classify(args, all_examples, all_labels):
     all_sent_encodings = []
     for sent_idx, (sentence, label) in tqdm.tqdm(enumerate(zip(all_examples, all_labels))):
         with torch.no_grad():
-            if args.shuffle_mode == 'baseline_pre_encode':
+            if 'pre_encode' in args.shuffle_mode:
                 sentence = sentence.split()
-                random.shuffle(sentence)
+                if args.shuffle_mode.startswith('baseline'):
+                    random.shuffle(sentence)
+                else:
+                    if label == 'p':
+                        random.shuffle(sentence)
+
                 tokens = roberta.encode(" ".join(sentence))
             elif args.shuffle_mode == 'baseline_post_encode':
                 sentence = sentence.split()
