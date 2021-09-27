@@ -34,10 +34,10 @@ def classify(args, all_examples, all_labels):
                 tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
 
                 if args.shuffle_mode.startswith('baseline'):
-                    random.shuffle(sentence)
+                    random.shuffle(tokens)
                 else:
                     if label == 'p':
-                        random.shuffle(sentence)
+                        random.shuffle(tokens)
 
                 tokens = [item for sublist in tokens for item in sublist]
                 tokens = torch.stack(tokens)
