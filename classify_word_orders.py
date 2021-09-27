@@ -1,19 +1,13 @@
 from roberta.helpers import load_shuffled_model
 import tqdm
-from collections import defaultdict
-import torch.nn.functional as F
 import argparse
+from sklearn.model_selection import cross_val_score
 import torch
-from statistics import mean
-from fairseq.data import Dictionary
 import numpy as np
-from string import punctuation
 import random
 from utils.rand_word_order_utils import ud_load_classify
-from scipy.stats import spearmanr
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils import shuffle
-import math
 
 
 def classify(args, all_examples, all_labels):
@@ -45,22 +39,27 @@ def classify(args, all_examples, all_labels):
             all_sent_encodings.append(features.cpu().detach().numpy())
 
     # make train / dev / test
-    dev_size = len(all_sent_encodings) // 6
-    if not args.hold_out_words:
-        train_features, train_labels = np.vstack(all_sent_encodings[:-dev_size]), all_labels[:-dev_size]
-        dev_features, dev_labels = np.vstack(all_sent_encodings[-dev_size:]), all_labels[-dev_size:]
+    clf = LogisticRegression(random_state=42).fit(train_features, train_labels)
+    X, y = np.vstack(all_sent_encodings), all_labels
+    scores = cross_val_score(clf, X, y, cv=5)
+    print(scores)
+    print(f"{np.mean(scores)} ± {np.std(scores)}")
+
+    # acc = clf.score(dev_features, dev_labels)
+    # dev_size = len(all_sent_encodings) // 6
+    # if not args.hold_out_words:
+    #     train_features, train_labels = np.vstack(all_sent_encodings[:-dev_size]), all_labels[:-dev_size]
+    #     dev_features, dev_labels = np.vstack(all_sent_encodings[-dev_size:]), all_labels[-dev_size:]
 
     # print stats
-    o_count_train = len([l for l in train_labels if l == 'o'])
-    p_count_train = len([l for l in train_labels if l == 'p'])
-    o_count_dev = len([l for l in dev_labels if l == 'o'])
-    p_count_dev = len([l for l in dev_labels if l == 'p'])
-    print("O-train: {} P-train: {}  O-dev: {} P-dev: {} !".format(o_count_train, p_count_train, o_count_dev, p_count_dev))
-
+    # o_count_train = len([l for l in train_labels if l == 'o'])
+    # p_count_train = len([l for l in train_labels if l == 'p'])
+    # o_count_dev = len([l for l in dev_labels if l == 'o'])
+    # p_count_dev = len([l for l in dev_labels if l == 'p'])
+    # print("O-train: {} P-train: {}  O-dev: {} P-dev: {} !".format(o_count_train, p_count_train, o_count_dev, p_count_dev))
+    #
     # train and eval
-    clf = LogisticRegression(random_state=42).fit(train_features, train_labels)
-    acc = clf.score(dev_features, dev_labels)
-    print(acc, ": acc")
+    # print(acc, ": acc")
 
 
 def main():
