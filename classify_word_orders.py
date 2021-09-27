@@ -28,6 +28,16 @@ def classify(args, all_examples, all_labels):
                         random.shuffle(sentence)
 
                 tokens = roberta.encode(" ".join(sentence))
+
+            elif 'mid_encode' in args.shuffle_mode:
+                tokens = roberta.encode(sentence)[1:-1]
+                if args.shuffle_mode.startswith('baseline'):
+                    random.shuffle(tokens)
+                else:
+                    if label == 'p':
+                        random.shuffle(tokens)
+                tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
+
             elif 'post_encode' in args.shuffle_mode:
                 sentence = sentence.split()
                 split_with_spaces = [i for i in sentence]
