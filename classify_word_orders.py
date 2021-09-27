@@ -39,7 +39,7 @@ def classify(args, all_examples, all_labels):
             all_sent_encodings.append(features.cpu().detach().numpy())
 
     # make train / dev / test
-    clf = LogisticRegression(random_state=42).fit(train_features, train_labels)
+    clf = LogisticRegression(random_state=42)
     X, y = np.vstack(all_sent_encodings), all_labels
     scores = cross_val_score(clf, X, y, cv=5)
     print(scores)
