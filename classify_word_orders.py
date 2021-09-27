@@ -34,10 +34,10 @@ def classify(args, all_examples, all_labels):
                 tokens = torch.cat((torch.tensor([0]), tokens, (torch.tensor([2]))))
             elif args.safe_shuffle:
                 sentence = sentence.split()
-                split_with_spaces = [" " + i for i in sentence]
+                split_with_spaces = [i for i in sentence]
                 tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
-                if label == 'p':
-                    random.shuffle(tokens)
+                # if label == 'p':
+                random.shuffle(tokens)
                 tokens = [item for sublist in tokens for item in sublist]
                 tokens = torch.stack(tokens)
                 tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
