@@ -39,7 +39,6 @@ def classify(args, all_examples, all_labels):
                     if label == 'p':
                         random.shuffle(sentence)
 
-                random.shuffle(tokens)
                 tokens = [item for sublist in tokens for item in sublist]
                 tokens = torch.stack(tokens)
                 tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
