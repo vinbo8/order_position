@@ -41,7 +41,12 @@ def classify(args, all_examples, all_labels):
             elif 'post_encode' in args.shuffle_mode:
                 sentence = sentence.split()
                 split_with_spaces = [i for i in sentence]
-                tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
+                if args.shuffle_mode.startswith('whitespaced'):
+                    tokens = [roberta.encode(" " + i)[1:-1] for i in split_with_spaces]
+                elif args.shuffle_mode.startswith('safe'):
+                    tokens = [roberta.encode(split_with_spaces[0])[1:-1]] + [roberta.encode(i)[1:-1] for i in split_with_spaces]
+                else:
+                    tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
 
                 if args.shuffle_mode.startswith('baseline'):
                     random.shuffle(tokens)
@@ -52,6 +57,7 @@ def classify(args, all_examples, all_labels):
                 tokens = [item for sublist in tokens for item in sublist]
                 tokens = torch.stack(tokens)
                 tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
+
             else:
                 print(f"{args.shuffle_mode} does not exist")
                 return
