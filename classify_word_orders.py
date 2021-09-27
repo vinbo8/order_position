@@ -18,17 +18,17 @@ def classify(args, all_examples, all_labels):
     all_sent_encodings = []
     for sent_idx, (sentence, label) in tqdm.tqdm(enumerate(zip(all_examples, all_labels))):
         with torch.no_grad():
-            if args.shuffle_mode == 'bpe':
-                tokens = roberta.encode(sentence)
-                #drop start and end tok 0 and 2, shuffle, then add them
-                idx = torch.randperm(tokens.nelement()-2)
-                tokens = tokens[1:-1]
+            if args.shuffle_mode == 'baseline_tokens':
+                random.shuffle(tokens)
+                tokens = roberta.encode(sentence)[1:-1]
+                idx = torch.randperm(tokens.nelement())
                 tokens = tokens.view(-1)[idx].view(tokens.size())
                 tokens = torch.cat((torch.tensor([0]), tokens, (torch.tensor([2]))))
-            elif args.shuffle_mode == 'safe_tokens':
+            elif args.shuffle_mode == 'baseline_safe':
                 sentence = sentence.split()
                 split_with_spaces = [i for i in sentence]
                 tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
+                # if label == 'p':
                 random.shuffle(tokens)
                 tokens = [item for sublist in tokens for item in sublist]
                 tokens = torch.stack(tokens)
@@ -68,7 +68,8 @@ def main():
     parser.add_argument('-m', "--model_path", type=str)
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
     parser.add_argument('-p', "--no_perms", type=int, default=1)
-    parser.add_argument("--shuffle_mode", action='store', default='tokens', choices=['tokens', 'bpe', 'safe_tokens'])
+    parser.add_argument("--shuffle_mode", action='store', default='tokens',
+                        choices=['tokens', 'bpe', 'safe_tokens', 'baseline_safe', 'baseline_tokens'])
     parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False)
     arguments = parser.parse_args()
 
