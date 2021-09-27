@@ -69,7 +69,7 @@ def main():
     parser.add_argument('-m', "--model_path", type=str)
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
     parser.add_argument('-p', "--no_perms", type=int, default=1)
-    parser.add_argument("--shuffle_mode", action='store', default='tokens', options=['tokens', 'bpe', 'safe_tokens'])
+    parser.add_argument("--shuffle_mode", action='store', default='tokens', choices=['tokens', 'bpe', 'safe_tokens'])
     parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False)
     arguments = parser.parse_args()
 
