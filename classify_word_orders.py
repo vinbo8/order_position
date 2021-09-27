@@ -20,6 +20,7 @@ def classify(args, all_examples, all_labels):
         with torch.no_grad():
             if 'pre_encode' in args.shuffle_mode:
                 sentence = sentence.split()
+
                 if args.shuffle_mode.startswith('baseline'):
                     random.shuffle(sentence)
                 else:
@@ -27,10 +28,17 @@ def classify(args, all_examples, all_labels):
                         random.shuffle(sentence)
 
                 tokens = roberta.encode(" ".join(sentence))
-            elif args.shuffle_mode == 'baseline_post_encode':
+            elif 'post_encode' in args.shuffle_mode:
                 sentence = sentence.split()
                 split_with_spaces = [i for i in sentence]
                 tokens = [roberta.encode(i)[1:-1] for i in split_with_spaces]
+
+                if args.shuffle_mode.startswith('baseline'):
+                    random.shuffle(sentence)
+                else:
+                    if label == 'p':
+                        random.shuffle(sentence)
+
                 random.shuffle(tokens)
                 tokens = [item for sublist in tokens for item in sublist]
                 tokens = torch.stack(tokens)
