@@ -22,11 +22,21 @@ def classify(args, all_examples, all_pairs, all_labels):
         assert len(label_list) == len(pair_list)
         try:
             with torch.no_grad():
-                d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
-                # d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
-                d = d[torch.randperm(d.size(0))]
-                roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
-                sent_features = roberta.extract_features_aligned_to_words(str(sentence))
+                if 'scramble_position' in args.perturb:
+                    d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
+                    d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
+                    d = d[torch.randperm(d.size(0))]
+                    roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
+                    sent_features = roberta.extract_features_aligned_to_words(str(sentence))
+
+                if 'bpe_nospace' in args.perturb:
+                    sentence = sentence.split()
+                    sent_features = [roberta.extract_features_aligned_to_words(i)[1:-1] for i in sentence]
+                elif 'bpe_space' in args.perturb:
+                    sentence = sentence.split()
+                    sent_features = [roberta.extract_features_aligned_to_words(f" {i}")[1:-1] for i in sentence[1:]]
+                    sent_features = [roberta.extract_features_aligned_to_words(sentence[0])[1:-1]] + sent_features
+
                 for pair in pair_list:
                     pair_item1 = sent_features[pair[0]]
                     pair_item2 = sent_features[pair[1]]
@@ -53,6 +63,7 @@ def main():
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
     parser.add_argument('-s', "--no_samples", type=int, default=5)
     parser.add_argument('-r', "--no_runs", type=int, default=4)
+    parser.add_argument('-p', "--perturb", action='store')
     arguments = parser.parse_args()
 
     print(arguments.model_path, ' :model')
