@@ -21,10 +21,9 @@ def classify(args, all_examples, all_pairs, all_labels):
         assert len(label_list) == len(pair_list)
         try:
             with torch.no_grad():
-                sentence = str(sentence).split()
-                if sent_idx >= len(all_examples) // 5:
-                    random.shuffle(sentence)
-                sentence = " ".join(sentence)
+                d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
+                d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
+                roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
                 sent_features = roberta.extract_features_aligned_to_words(str(sentence))
                 for pair in pair_list:
                     pair_item1 = sent_features[pair[0]]
@@ -36,17 +35,12 @@ def classify(args, all_examples, all_pairs, all_labels):
             continue
 
     # make train / dev / test
-    train_X = np.vstack(all_word_encodings[len(all_examples) // 5:])
-    val_X = np.vstack(all_word_encodings[:len(all_examples) // 5])
-    train_y = all_word_labels[len(all_examples) // 5:]
-    val_y = all_word_labels[:len(all_examples) // 5]
-    clf = LogisticRegression(random_state=42).fit(train_X, train_y)
-    print(clf.score(val_X, val_y))
-    # X, y = np.vstack(all_word_encodings), all_word_labels
-    # scores = cross_val_score(clf, X, y, cv=5)
-    # print(scores)
-    # print(f"{np.mean(scores)} ± {np.std(scores)}")
-    # return np.mean(scores)
+    clf = LogisticRegression(random_state=42)
+    X, y = np.vstack(all_word_encodings), all_word_labels
+    scores = cross_val_score(clf, X, y, cv=5)
+    print(scores)
+    print(f"{np.mean(scores)} ± {np.std(scores)}")
+    return np.mean(scores)
 
 def main():
     parser = argparse.ArgumentParser(description="generate token embeddings from corpus")
