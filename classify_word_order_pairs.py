@@ -22,12 +22,14 @@ def classify(args, all_examples, all_pairs, all_labels):
         try:
             with torch.no_grad():
                 sentence = str(sentence).split()
-                random.shuffle(sentence)
+                # random.shuffle(sentence)j
                 sentence = " ".join(sentence)
                 sent_features = roberta.extract_features_aligned_to_words(str(sentence))
                 for pair in pair_list:
-                    pair_item1 = sent_features[pair[0]]
-                    pair_item2 = sent_features[pair[1]]
+                    # pair_item1 = sent_features[pair[0]]
+                    # pair_item2 = sent_features[pair[1]]
+                    pair_item1 = roberta.model.encoder.sentence_encoder.embed_positions.weight[pair[0]]
+                    pair_item2 = roberta.model.encoder.sentence_encoder.embed_positions.weight[pair[1]]
                     all_word_encodings.append(torch.cat((pair_item1.vector, pair_item2.vector)).cpu().detach().numpy())
                     all_words.append((str(pair_item1), str(pair_item2)))
                 all_word_labels.extend(label_list)
