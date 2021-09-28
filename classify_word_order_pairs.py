@@ -73,16 +73,18 @@ def classify(args, all_examples, all_pairs, all_labels):
             vocab.append(words[1])
         else:
             break
-    dev_vocab = list(set(vocab))
-    for word, enc, label in zip(all_word_tokens[dev_size:], all_word_encodings[dev_size:], all_word_labels[dev_size:]):
-        if word not in dev_vocab:
+
+    vocab = set(vocab)
+    for words, enc, label in zip(all_word_tokens[dev_size:], all_word_encodings[dev_size:], all_word_labels[dev_size:]):
+        if words[0] not in vocab and words[1] not in vocab:
             X_train.append(enc)
             y_train.append(label)
 
     X_train = np.vstack(X_train)
     X_dev = np.vstack(X_dev)
+    dummy.fit(X_train, y_train)
     clf.fit(X_train, y_train)
-    print(clf.score(X_dev, y_dev))
+    print(f"{dummy.score(X_dev, y_dev)}\t{clf.score(X_dev, y_dev)}")
     return
 
     # X, y = np.vstack(all_word_encodings), all_word_labels
