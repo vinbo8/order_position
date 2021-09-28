@@ -43,8 +43,8 @@ def classify(args, all_examples, all_pairs, all_labels):
                 if args.perturb == 'baseline':
                     sent_features = roberta.encode(sentence)
 
+                sent_features = roberta.extract_features(sent_features).squeeze(0)
                 for pair in pair_list:
-                    sent_features = roberta.extract_features(sent_features).squeeze(0)
                     pair_item1 = sent_features[pair[0]]
                     pair_item2 = sent_features[pair[1]]
                     all_word_encodings.append(torch.cat((pair_item1, pair_item2)).cpu().detach().numpy())
