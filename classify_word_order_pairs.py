@@ -21,6 +21,9 @@ def classify(args, all_examples, all_pairs, all_labels):
         assert len(label_list) == len(pair_list)
         try:
             with torch.no_grad():
+                sentence = str(sentence).split()
+                random.shuffle(sentence)
+                sentence = " ".join(sentence)
                 sent_features = roberta.extract_features_aligned_to_words(str(sentence))
                 for pair in pair_list:
                     pair_item1 = sent_features[pair[0]]
