@@ -17,6 +17,7 @@ def classify(args, all_examples, all_pairs, all_labels):
     roberta.eval()
     all_word_encodings = []
     all_word_labels = []
+    all_word_tokens = []
     for sent_idx, (sentence, pair_list, label_list) in tqdm(enumerate(zip(all_examples, all_pairs, all_labels))):
         assert len(label_list) == len(pair_list)
         try:
@@ -33,21 +34,25 @@ def classify(args, all_examples, all_pairs, all_labels):
                     sent_features = [roberta.encode(i)[1:-1] for i in sentence]
                     sent_features = torch.stack([item for sublist in sent_features for item in sublist])
                     sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
+                    sentence = " ".join(sentence)
                 elif 'bpe_space' in args.perturb:
                     sentence = sentence.split()
                     sent_features = [roberta.encode(f" {i}")[1:-1] for i in sentence[1:]]
                     sent_features = [roberta.encode(sentence[0])[1:-1]] + sent_features
                     sent_features = torch.stack([item for sublist in sent_features for item in sublist])
                     sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
+                    sentence = " ".join(sentence)
 
                 if args.perturb == 'baseline':
                     sent_features = roberta.encode(sentence)
 
                 sent_features = roberta.extract_features(sent_features).squeeze(0)
+                fft = roberta.extract_features_aligned_to_words(str(sentence))
                 for pair in pair_list:
                     pair_item1 = sent_features[pair[0]]
                     pair_item2 = sent_features[pair[1]]
                     all_word_encodings.append(torch.cat((pair_item1, pair_item2)).cpu().detach().numpy())
+                    all_word_tokens.append((fft[pair[0]], fft[pair[1]]))
                 all_word_labels.extend(label_list)
         except AssertionError:
             continue
@@ -56,11 +61,36 @@ def classify(args, all_examples, all_pairs, all_labels):
     clf = LogisticRegression(random_state=42)
     dummy = DummyClassifier(strategy="most_frequent", random_state=42)
 
-    X, y = np.vstack(all_word_encodings), all_word_labels
-    scores = cross_val_score(clf, X, y, cv=5)
-    dummy_scores = cross_val_score(dummy, X, y, cv=5)
-    print(f"{np.mean(scores)} ± {np.std(scores)}; dummy: {np.mean(dummy_scores)}")
-    return np.mean(scores)
+    vocab = []
+    dev_size = len(all_word_tokens) // 5
+    X_dev, y_dev = [], []
+    X_train, y_train = [], []
+    for words, enc, label in zip(all_word_tokens, all_word_encodings, all_word_labels):
+        if len(y_dev) < dev_size:
+            X_dev.append(enc)
+            y_dev.append(label)
+            vocab.append(words[0])
+            vocab.append(words[1])
+        else:
+            break
+    dev_vocab = list(set(vocab))
+    for word, enc, label in zip(all_word_tokens[dev_size:], all_word_encodings[dev_size:], all_word_labels[dev_size:]):
+        if word not in dev_vocab:
+            X_train.append(enc)
+            y_train.append(label)
+
+    X_train = np.vstack(X_train)
+    X_dev = np.vstack(X_dev)
+    clf.fit(X_train, y_train)
+    print(clf.score(X_dev, y_dev))
+    return
+
+    # X, y = np.vstack(all_word_encodings), all_word_labels
+    # scores = cross_val_score(clf, X, y, cv=5)
+    # dummy_scores = cross_val_score(dummy, X, y, cv=5)
+    # print(f"{np.mean(scores)} ± {np.std(scores)}; dummy: {np.mean(dummy_scores)}")
+    # return np.mean(scores)
+
 
 def main():
     parser = argparse.ArgumentParser(description="generate token embeddings from corpus")
