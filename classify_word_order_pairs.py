@@ -22,7 +22,8 @@ def classify(args, all_examples, all_pairs, all_labels):
         try:
             with torch.no_grad():
                 d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
-                d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
+                # d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
+                d = d[torch.randperm(d.size(0))]
                 roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
                 sent_features = roberta.extract_features_aligned_to_words(str(sentence))
                 for pair in pair_list:
