@@ -7,6 +7,7 @@ import random
 from utils.rand_word_order_utils import ud_load_classify_pairwise, mean_confidence_interval
 from sklearn.linear_model import LogisticRegression
 import math
+from tqdm import tqdm
 
 
 def classify(args, all_examples, all_pairs, all_labels):
@@ -16,7 +17,7 @@ def classify(args, all_examples, all_pairs, all_labels):
     all_word_encodings = []
     all_word_labels = []
     all_words = []
-    for sent_idx, (sentence, pair_list, label_list) in enumerate(zip(all_examples, all_pairs, all_labels)):
+    for sent_idx, (sentence, pair_list, label_list) in tqdm(enumerate(zip(all_examples, all_pairs, all_labels))):
         assert len(label_list) == len(pair_list)
         try:
             with torch.no_grad():
