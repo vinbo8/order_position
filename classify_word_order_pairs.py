@@ -6,6 +6,7 @@ import numpy as np
 import random
 from utils.rand_word_order_utils import ud_load_classify_pairwise, mean_confidence_interval
 from sklearn.linear_model import LogisticRegression
+from sklearn.dummy import DummyClassifier
 import math
 from tqdm import tqdm
 
@@ -37,10 +38,12 @@ def classify(args, all_examples, all_pairs, all_labels):
 
     # make train / dev / test
     clf = LogisticRegression(random_state=42)
+    dummy = DummyClassifier(strategy="most_frequent", random_state=42)
+
     X, y = np.vstack(all_word_encodings), all_word_labels
     scores = cross_val_score(clf, X, y, cv=5)
-    print(scores)
-    print(f"{np.mean(scores)} ± {np.std(scores)}")
+    dummy_scores = cross_val_score(dummy, X, y, cv=5)
+    print(f"{np.mean(scores)} ± {np.std(scores)}; dummy: {np.mean(dummy_scores)}")
     return np.mean(scores)
 
 def main():

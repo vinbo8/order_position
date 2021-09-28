@@ -154,13 +154,12 @@ def ud_load_classify_pairwise(ud_data, sentence_len_limit, sample_no):
     sentences = parse(ud_data)
     random.shuffle(sentences)
     all_examples, all_pairs, all_labels = [], [], []
-    num_sents = len([s for s in sentences if 3 < len(s) < sentence_len_limit])
     for sentence in sentences:
         if 3 < len(sentence) < sentence_len_limit:
             token_list = [t['form'] for t in sentence]
             labels, word_pairs, sent_pairs, sent_token_idxs = [], [], [], []
             for s in range(sample_no):
-                token_idx = random.sample(range(len(token_list)), 2)
+                token_idx = random.sample(range(1, len(token_list) + 1), 2)
                 sent_token_idxs.append(token_idx)
                 order = 0 if token_idx[0] > token_idx[1] else 1
                 labels.append(order)
