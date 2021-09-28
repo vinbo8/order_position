@@ -22,14 +22,13 @@ def classify(args, all_examples, all_pairs, all_labels):
         try:
             with torch.no_grad():
                 sentence = str(sentence).split()
-                # random.shuffle(sentence)j
+                if sent_idx >= len(all_examples) // 5:
+                    random.shuffle(sentence)
                 sentence = " ".join(sentence)
                 sent_features = roberta.extract_features_aligned_to_words(str(sentence))
                 for pair in pair_list:
-                    # pair_item1 = sent_features[pair[0]]
-                    # pair_item2 = sent_features[pair[1]]
-                    pair_item1 = roberta.model.encoder.sentence_encoder.embed_positions.weight[pair[0]]
-                    pair_item2 = roberta.model.encoder.sentence_encoder.embed_positions.weight[pair[1]]
+                    pair_item1 = sent_features[pair[0]]
+                    pair_item2 = sent_features[pair[1]]
                     all_word_encodings.append(torch.cat((pair_item1.vector, pair_item2.vector)).cpu().detach().numpy())
                     all_words.append((str(pair_item1), str(pair_item2)))
                 all_word_labels.extend(label_list)
@@ -37,12 +36,17 @@ def classify(args, all_examples, all_pairs, all_labels):
             continue
 
     # make train / dev / test
-    clf = LogisticRegression(random_state=42)
-    X, y = np.vstack(all_word_encodings), all_word_labels
-    scores = cross_val_score(clf, X, y, cv=5)
-    print(scores)
-    print(f"{np.mean(scores)} ± {np.std(scores)}")
-    return np.mean(scores)
+    train_X = np.vstack(all_word_encodings[len(all_examples) // 5:])
+    val_X = np.vstack(all_word_encodings[:len(all_examples) // 5])
+    train_y = all_word_labels[len(all_examples) // 5:]
+    val_y = all_word_labels[:len(all_examples) // 5]
+    clf = LogisticRegression(random_state=42).fit(train_X, train_y)
+    print(clf.score(val_X, val_y))
+    # X, y = np.vstack(all_word_encodings), all_word_labels
+    # scores = cross_val_score(clf, X, y, cv=5)
+    # print(scores)
+    # print(f"{np.mean(scores)} ± {np.std(scores)}")
+    # return np.mean(scores)
 
 def main():
     parser = argparse.ArgumentParser(description="generate token embeddings from corpus")
