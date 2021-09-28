@@ -17,7 +17,6 @@ def classify(args, all_examples, all_pairs, all_labels):
     roberta.eval()
     all_word_encodings = []
     all_word_labels = []
-    all_words = []
     for sent_idx, (sentence, pair_list, label_list) in tqdm(enumerate(zip(all_examples, all_pairs, all_labels))):
         assert len(label_list) == len(pair_list)
         try:
@@ -27,21 +26,28 @@ def classify(args, all_examples, all_pairs, all_labels):
                     d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
                     d = d[torch.randperm(d.size(0))]
                     roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
-                    sent_features = roberta.extract_features_aligned_to_words(str(sentence))
+                    sent_features = roberta.encode(sentence)
 
                 if 'bpe_nospace' in args.perturb:
                     sentence = sentence.split()
-                    sent_features = [roberta.extract_features_aligned_to_words(i)[1:-1] for i in sentence]
+                    sent_features = [roberta.encode(i)[1:-1] for i in sentence]
+                    sent_features = torch.stack([item for sublist in sent_features for item in sublist])
+                    sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
                 elif 'bpe_space' in args.perturb:
                     sentence = sentence.split()
-                    sent_features = [roberta.extract_features_aligned_to_words(f" {i}")[1:-1] for i in sentence[1:]]
-                    sent_features = [roberta.extract_features_aligned_to_words(sentence[0])[1:-1]] + sent_features
+                    sent_features = [roberta.encode(f" {i}")[1:-1] for i in sentence[1:]]
+                    sent_features = [roberta.encode(sentence[0])[1:-1]] + sent_features
+                    sent_features = torch.stack([item for sublist in sent_features for item in sublist])
+                    sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
+
+                if args.perturb == 'baseline':
+                    sent_features = roberta.encode(sentence)
 
                 for pair in pair_list:
+                    sent_features = roberta.extract_features(sent_features)
                     pair_item1 = sent_features[pair[0]]
                     pair_item2 = sent_features[pair[1]]
-                    all_word_encodings.append(torch.cat((pair_item1.vector, pair_item2.vector)).cpu().detach().numpy())
-                    all_words.append((str(pair_item1), str(pair_item2)))
+                    all_word_encodings.append(torch.cat((pair_item1, pair_item2)).cpu().detach().numpy())
                 all_word_labels.extend(label_list)
         except AssertionError:
             continue
