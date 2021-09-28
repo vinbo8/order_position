@@ -52,7 +52,7 @@ def classify(args, all_examples, all_pairs, all_labels):
                     pair_item1 = sent_features[pair[0]]
                     pair_item2 = sent_features[pair[1]]
                     all_word_encodings.append(torch.cat((pair_item1, pair_item2)).cpu().detach().numpy())
-                    all_word_tokens.append((fft[pair[0]], fft[pair[1]]))
+                    all_word_tokens.append((str(fft[pair[0]]), str(fft[pair[1]])))
                 all_word_labels.extend(label_list)
         except AssertionError:
             continue
