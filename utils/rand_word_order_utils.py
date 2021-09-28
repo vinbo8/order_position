@@ -160,6 +160,9 @@ def ud_load_classify_pairwise(ud_data, sentence_len_limit, sample_no):
             labels, word_pairs, sent_pairs, sent_token_idxs = [], [], [], []
             for s in range(sample_no):
                 token_idx = random.sample(range(1, len(token_list) + 1), 2)
+                if token_idx in sent_token_idxs:
+                    continue
+
                 sent_token_idxs.append(token_idx)
                 order = 0 if token_idx[0] > token_idx[1] else 1
                 labels.append(order)
