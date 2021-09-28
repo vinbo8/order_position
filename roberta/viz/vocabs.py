@@ -29,8 +29,8 @@ def shuffle_list(some_list):
 def main():
     fig = make_subplots(1, 1)
     c = Counter()
-    whitespace_orig = [0, 0]
-    whitespace_shuf = [0, 0]
+    whitespace_orig = [0, 0, 0]
+    whitespace_shuf = [0, 0, 0]
     whitespace_orig_type = 0
     whitespace_shuf_type = 0
     with open(sys.argv[1], 'r') as f:
@@ -56,15 +56,19 @@ def main():
             whitespace_orig[0] += 1
         elif model.decode(torch.LongTensor([i])).endswith(' '):
             whitespace_orig[1] += 1
+        elif ' ' in model.decode(torch.LongTensor([i])):
+            whitespace_orig[2] += 1
 
     for i in all_shuf_tokens:
         if model.decode(torch.LongTensor([i])).startswith(' '):
             whitespace_shuf[0] += 1
         elif model.decode(torch.LongTensor([i])).endswith(' '):
             whitespace_shuf[1] += 1
+        elif ' ' in model.decode(torch.LongTensor([i])):
+            whitespace_shuf[2] += 1
 
-    print(f"{whitespace_orig[0] / len(all_orig_tokens)}\t{whitespace_orig[1] / len(all_orig_tokens)}")
-    print(f"{whitespace_shuf[0] / len(all_shuf_tokens)}\t{whitespace_shuf[1] / len(all_shuf_tokens)}")
+    print(f"{whitespace_orig[0] / len(all_orig_tokens)}\t{whitespace_orig[1] / len(all_orig_tokens)}\t{whitespace_orig[2] / len(all_orig_tokens)}")
+    print(f"{whitespace_shuf[0] / len(all_shuf_tokens)}\t{whitespace_shuf[1] / len(all_shuf_tokens)}\t{whitespace_shuf[2] / len(all_shuf_tokens)}")
 
     orig_counter = Counter(all_orig_tokens)
     shuf_counter = Counter(all_shuf_tokens)
