@@ -58,7 +58,7 @@ def classify(args, all_examples, all_pairs, all_labels):
             continue
 
     # make train / dev / test
-    clf = LogisticRegression(random_state=42)
+    clf = LogisticRegression()
     dummy = DummyClassifier(strategy="most_frequent", random_state=42)
 
     vocab = []
@@ -85,7 +85,7 @@ def classify(args, all_examples, all_pairs, all_labels):
     dummy.fit(X_train, y_train)
     clf.fit(X_train, y_train)
     print(f"{dummy.score(X_dev, y_dev)}\t{clf.score(X_dev, y_dev)}")
-    return
+    return clf.score(X_dev, y_dev)
 
     # X, y = np.vstack(all_word_encodings), all_word_labels
     # scores = cross_val_score(clf, X, y, cv=5)
@@ -107,17 +107,18 @@ def main():
     print(arguments.model_path, ' :model')
     dataset_file = open(arguments.dataset_path, 'r').read()
 
-    # acc_list = []
-    # for _ in range(arguments.no_runs):
-    all_examples, all_labels, all_pairs = ud_load_classify_pairwise(
-        dataset_file, arguments.max_sentence_len, arguments.no_samples
-    )
-    print(len(all_examples), ' no examples')
-    classify(arguments, all_examples, all_pairs, all_labels)
-    # acc_list.append(acc)
-    # acc_mean, acc_lower_conf_int, acc_upper_conf_int = mean_confidence_interval(acc_list)
-    # print("acc avg: {}, acc lower conf: {}, acc upper conf: {}".format(
-    #     acc_mean, acc_lower_conf_int, acc_upper_conf_int))
+    acc_list = []
+    for _ in range(arguments.no_runs):
+        all_examples, all_labels, all_pairs = ud_load_classify_pairwise(
+            dataset_file, arguments.max_sentence_len, arguments.no_samples
+        )
+        print(len(all_examples), ' no examples')
+        acc = classify(arguments, all_examples, all_pairs, all_labels)
+        acc_list.append(acc)
+
+    acc_mean, acc_lower_conf_int, acc_upper_conf_int = mean_confidence_interval(acc_list)
+    print("acc avg: {}, acc lower conf: {}, acc upper conf: {}".format(
+        acc_mean, acc_lower_conf_int, acc_upper_conf_int))
 
 
 if __name__ == '__main__':
