@@ -17,6 +17,7 @@ def classify(args, all_examples, all_pairs, all_labels):
     roberta.eval()
     all_word_encodings = []
     all_word_labels = []
+    all_indices = []
     all_word_tokens = []
     for sent_idx, (sentence, pair_list, label_list) in tqdm(enumerate(zip(all_examples, all_pairs, all_labels))):
         assert len(label_list) == len(pair_list)
@@ -53,6 +54,8 @@ def classify(args, all_examples, all_pairs, all_labels):
                     pair_item2 = sent_features[pair[1]]
                     all_word_encodings.append(torch.cat((pair_item1, pair_item2)).cpu().detach().numpy())
                     all_word_tokens.append((str(fft[pair[0]]), str(fft[pair[1]])))
+                    all_indices.append((pair[0], pair[1]))
+
                 all_word_labels.extend(label_list)
         except AssertionError:
             continue
@@ -61,27 +64,42 @@ def classify(args, all_examples, all_pairs, all_labels):
     clf = LogisticRegression()
     dummy = DummyClassifier(strategy="most_frequent", random_state=42)
 
-    vocab = []
-    dev_size = len(all_word_tokens) // 5
-    X_dev, y_dev = [], []
-    X_train, y_train = [], []
-    for words, enc, label in zip(all_word_tokens, all_word_encodings, all_word_labels):
-        if len(y_dev) < dev_size:
-            X_dev.append(enc)
-            y_dev.append(label)
-            vocab.append(words[0])
-            vocab.append(words[1])
-        else:
-            break
+    if 'leave' in args.perturb:
+        z = list(zip(all_word_tokens, all_word_encodings, all_word_labels, all_indices))
+        dev_size = len(all_word_tokens) // 5
+        X_dev, y_dev = [], []
+        used_indices = []
+        s = tuple(random.sample(range(1, 10), 1))[0]
 
-    vocab = set(vocab)
-    for words, enc, label in zip(all_word_tokens[dev_size:], all_word_encodings[dev_size:], all_word_labels[dev_size:]):
-        if words[0] not in vocab and words[1] not in vocab:
-            X_train.append(enc)
-            y_train.append(label)
+        X_dev = [j for (i, j, k, l) in z if s in l]
+        y_dev = [k for (i, j, k, l) in z if s in l]
 
-    X_train = np.vstack(X_train)
-    X_dev = np.vstack(X_dev)
+        X_train = [j for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
+        y_train = [k for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
+
+    else:
+        vocab = []
+        dev_size = len(all_word_tokens) // 5
+        X_dev, y_dev = [], []
+        X_train, y_train = [], []
+        for words, enc, label in zip(all_word_tokens, all_word_encodings, all_word_labels):
+            if len(y_dev) < dev_size:
+                X_dev.append(enc)
+                y_dev.append(label)
+                vocab.append(words[0])
+                vocab.append(words[1])
+            else:
+                break
+
+        vocab = set(vocab)
+        for words, enc, label in zip(all_word_tokens[dev_size:], all_word_encodings[dev_size:], all_word_labels[dev_size:]):
+            if words[0] not in vocab and words[1] not in vocab:
+                X_train.append(enc)
+                y_train.append(label)
+
+        X_train = np.vstack(X_train)
+        X_dev = np.vstack(X_dev)
+
     dummy.fit(X_train, y_train)
     clf.fit(X_train, y_train)
     print(f"{dummy.score(X_dev, y_dev)}\t{clf.score(X_dev, y_dev)}")
