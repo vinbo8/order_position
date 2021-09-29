@@ -44,7 +44,7 @@ def classify(args, all_examples, all_pairs, all_labels):
                     sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
                     sentence = " ".join(sentence)
 
-                if args.perturb == 'baseline':
+                if 'baseline' in args.perturb:
                     sent_features = roberta.encode(sentence)
 
                 sent_features = roberta.extract_features(sent_features).squeeze(0)
@@ -77,6 +77,8 @@ def classify(args, all_examples, all_pairs, all_labels):
 
         X_train = [j for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
         y_train = [k for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
+
+        print(f"{len(X_train)}\t{len(X_dev)}")
 
     else:
         vocab = []
