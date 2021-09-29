@@ -66,7 +66,7 @@ def classify(args, all_examples, all_pairs, all_labels):
 
     if 'leave' in args.perturb:
         z = list(zip(all_word_tokens, all_word_encodings, all_word_labels, all_indices))
-        dev_size = len(all_word_tokens) // 5
+        dev_size = 2000
         X_dev, y_dev = [], []
         used_indices = []
         while len(X_dev) < dev_size:
