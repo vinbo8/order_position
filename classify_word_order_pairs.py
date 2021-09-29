@@ -73,10 +73,10 @@ def classify(args, all_examples, all_pairs, all_labels):
             s = tuple(random.sample(range(1, 20), 2))
             X_dev.extend([j for (i, j, k, l) in z if l == s])
             y_dev.extend([k for (i, j, k, l) in z if l == s])
-            used_indices.append(s)
+            used_indices.extend([s[0], s[1]])
 
-        X_train = [j for (i, j, k, l) in z if l not in used_indices]
-        y_train = [k for (i, j, k, l) in z if l not in used_indices]
+        X_train = [j for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
+        y_train = [k for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
 
     else:
         vocab = []
