@@ -69,13 +69,13 @@ def classify(args, all_examples, all_pairs, all_labels):
         dev_size = len(all_word_tokens) // 5
         X_dev, y_dev = [], []
         used_indices = []
-        s = tuple(random.sample(range(1, 10), 1))[0]
+        s = tuple(random.sample(range(1, 10), 2))
 
-        X_dev = [j for (i, j, k, l) in z if s in l]
-        y_dev = [k for (i, j, k, l) in z if s in l]
+        X_dev = [j for (i, j, k, l) in z if l == s]
+        y_dev = [k for (i, j, k, l) in z if l == s]
 
-        X_train = [j for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
-        y_train = [k for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
+        X_train = [j for (i, j, k, l) in z if l != s]
+        y_train = [k for (i, j, k, l) in z if l != s]
 
     else:
         vocab = []
