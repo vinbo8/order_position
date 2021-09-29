@@ -100,7 +100,7 @@ def main():
     parser.add_argument('-m', "--model_path", type=str)
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
     parser.add_argument('-s', "--no_samples", type=int, default=5)
-    parser.add_argument('-r', "--no_runs", type=int, default=4)
+    parser.add_argument('-r', "--no_runs", type=int, default=3)
     parser.add_argument('-p', "--perturb", action='store')
     arguments = parser.parse_args()
 
