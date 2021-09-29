@@ -44,7 +44,7 @@ def classify(args, all_examples, all_pairs, all_labels):
                     sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
                     sentence = " ".join(sentence)
 
-                if args.perturb == 'baseline':
+                if 'baseline' in args.perturb:
                     sent_features = roberta.encode(sentence)
 
                 sent_features = roberta.extract_features(sent_features).squeeze(0)
