@@ -11,7 +11,7 @@ import math
 from tqdm import tqdm
 
 
-def classify(args, all_examples, all_pairs, all_labels):
+def classify(args, all_examples, all_pairs, all_labels, leaveout):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     roberta = load_shuffled_model(args.model_path)
     roberta.eval()
@@ -68,15 +68,12 @@ def classify(args, all_examples, all_pairs, all_labels):
         z = list(zip(all_word_tokens, all_word_encodings, all_word_labels, all_indices))
         dev_size = 2000
         X_dev, y_dev = [], []
-        used_indices = []
-        while len(X_dev) < dev_size:
-            s = tuple(random.sample(range(1, 20), 2))
-            X_dev.extend([j for (i, j, k, l) in z if l == s])
-            y_dev.extend([k for (i, j, k, l) in z if l == s])
-            used_indices.extend([s[0], s[1]])
+        leaveout = tuple(leaveout)
+        X_dev.extend([j for (i, j, k, l) in z if l == leaveout])
+        y_dev.extend([k for (i, j, k, l) in z if l == leaveout])
 
-        X_train = [j for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
-        y_train = [k for (i, j, k, l) in z if l[0] not in used_indices and l[1] not in used_indices]
+        X_train = [j for (i, j, k, l) in z if l != leaveout]
+        y_train = [k for (i, j, k, l) in z if l != leaveout]
 
         print(f"{len(X_train)}\t{len(X_dev)}")
 
@@ -130,11 +127,11 @@ def main():
 
     acc_list = []
     for _ in range(arguments.no_runs):
-        all_examples, all_labels, all_pairs = ud_load_classify_pairwise(
-            dataset_file, arguments.max_sentence_len, arguments.no_samples
+        all_examples, all_labels, all_pairs, leaveout = ud_load_classify_pairwise(
+            arguments, dataset_file, arguments.max_sentence_len, arguments.no_samples
         )
         print(len(all_examples), ' no examples')
-        acc = classify(arguments, all_examples, all_pairs, all_labels)
+        acc = classify(arguments, all_examples, all_pairs, all_labels, leaveout)
         acc_list.append(acc)
 
     acc_mean, acc_lower_conf_int, acc_upper_conf_int = mean_confidence_interval(acc_list)

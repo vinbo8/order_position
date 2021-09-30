@@ -149,8 +149,12 @@ def ud_load_regress_pairwise(ud_data, sentence_len_limit, shuffle_level, sample_
     return all_examples, all_labels,  all_pairs
 
 
-def ud_load_classify_pairwise(ud_data, sentence_len_limit, sample_no):
+def ud_load_classify_pairwise(args, ud_data, sentence_len_limit, sample_no):
     # parse data
+    leaveout = 0
+    if 'leave' in args.perturb:
+        leaveout = random.sample(range(1, 10), 2)
+
     sentences = parse(ud_data)
     random.shuffle(sentences)
     all_examples, all_pairs, all_labels = [], [], []
@@ -158,8 +162,12 @@ def ud_load_classify_pairwise(ud_data, sentence_len_limit, sample_no):
         if 3 < len(sentence) < sentence_len_limit:
             token_list = [t['form'] for t in sentence if isinstance(t['id'], int)]
             labels, word_pairs, sent_pairs, sent_token_idxs = [], [], [], []
-            for s in range(sample_no):
+            gen = 0
+            while gen < sample_no:
                 token_idx = random.sample(range(1, len(token_list) + 1), 2)
+                if 'leave' in args.perturb and ((token_idx[0] in leaveout) ^ (token_idx[1] in leaveout)):
+                    continue
+
                 if token_idx in sent_token_idxs:
                     continue
 
@@ -167,10 +175,11 @@ def ud_load_classify_pairwise(ud_data, sentence_len_limit, sample_no):
                 order = 0 if token_idx[0] > token_idx[1] else 1
                 labels.append(order)
                 word_pairs.append((token_idx[0], token_idx[1]))
+                gen += 1
 
             all_examples.append(' '.join(token_list))
             all_pairs.append(word_pairs)
             all_labels.append(labels)
 
-    return all_examples, all_labels,  all_pairs
+    return all_examples, all_labels,  all_pairs, leaveout
 
