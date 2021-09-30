@@ -18,6 +18,12 @@ def classify(args, all_examples, all_labels):
     all_sent_encodings = []
     for sent_idx, (sentence, label) in tqdm.tqdm(enumerate(zip(all_examples, all_labels))):
         with torch.no_grad():
+            if 'scramble_position' in args.shuffle_mode:
+                d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
+                d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
+                d = d[torch.randperm(d.size(0))]
+                roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
+
             if 'pre_encode' in args.shuffle_mode:
                 sentence = sentence.split()
 
@@ -28,7 +34,6 @@ def classify(args, all_examples, all_labels):
                         random.shuffle(sentence)
 
                 tokens = roberta.encode(" ".join(sentence))
-
             elif 'mid_encode' in args.shuffle_mode:
                 tokens = roberta.encode(sentence)[1:-1]
                 if args.shuffle_mode.startswith('baseline'):
@@ -37,7 +42,6 @@ def classify(args, all_examples, all_labels):
                     if label == 'p':
                         random.shuffle(tokens)
                 tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
-
             elif 'post_encode' in args.shuffle_mode:
                 sentence = sentence.split()
                 split_with_spaces = [i for i in sentence]
