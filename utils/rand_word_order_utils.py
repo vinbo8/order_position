@@ -169,6 +169,7 @@ def ud_load_classify_pairwise(args, ud_data, sentence_len_limit, sample_no):
                     continue
 
                 if token_idx in sent_token_idxs:
+                    gen += 1
                     continue
 
                 sent_token_idxs.append(token_idx)
