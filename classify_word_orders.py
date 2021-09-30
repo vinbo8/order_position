@@ -15,20 +15,21 @@ def classify(args, all_examples, all_labels):
     roberta = load_shuffled_model(args.model_path)
     roberta.eval()
 
+    if 'scramble_position' in args.shuffle_mode:
+        d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
+        d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
+        d = d[torch.randperm(d.size(0))]
+        roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
+
+    if 'norm_position' in args.shuffle_mode:
+        d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
+        mean = d.mean(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
+        std = d.std(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
+        roberta.model.encoder.sentence_encoder.embed_positions.weight.data = torch.normal(mean, std)
+
     all_sent_encodings = []
     for sent_idx, (sentence, label) in tqdm.tqdm(enumerate(zip(all_examples, all_labels))):
         with torch.no_grad():
-            if 'scramble_position' in args.shuffle_mode:
-                d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
-                d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
-                d = d[torch.randperm(d.size(0))]
-                roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
-
-            if 'norm_position' in args.shuffle_mode:
-                d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
-                mean = d.mean(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
-                std = d.std(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
-                roberta.model.encoder.sentence_encoder.embed_positions.weight.data = torch.normal(mean, std)
 
             if 'pre_encode' in args.shuffle_mode:
                 sentence = sentence.split()
