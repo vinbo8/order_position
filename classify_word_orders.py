@@ -30,7 +30,6 @@ def classify(args, all_examples, all_labels):
     all_sent_encodings = []
     for sent_idx, (sentence, label) in tqdm.tqdm(enumerate(zip(all_examples, all_labels))):
         with torch.no_grad():
-
             if 'pre_encode' in args.shuffle_mode:
                 sentence = sentence.split()
 
@@ -69,12 +68,18 @@ def classify(args, all_examples, all_labels):
                 tokens = torch.stack(tokens)
                 tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
 
+            elif 'only_position' in args.shuffle_mode:
+                s_len = len(roberta.encode(" ".join(sentence)))
+                features = roberta.model.encoder.sentence_encoder.embed_positions.weight[:s_len].mean(dim=0)
+
             else:
                 print(f"{args.shuffle_mode} does not exist")
                 return
 
-            features = roberta.extract_features(tokens)
-            features = features.squeeze(0).mean(dim=0)
+            if 'only_position' not in args.shuffle_mode:
+                features = roberta.extract_features(tokens)
+                features = features.squeeze(0).mean(dim=0)
+
             all_sent_encodings.append(features.cpu().detach().numpy())
 
     # make train / dev / test
