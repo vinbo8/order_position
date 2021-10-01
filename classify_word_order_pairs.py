@@ -19,17 +19,16 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
     all_word_labels = []
     all_indices = []
     all_word_tokens = []
+    if 'scramble_position' in args.perturb:
+        d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
+        d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
+        d = d[torch.randperm(d.size(0))]
+        roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
+
     for sent_idx, (sentence, pair_list, label_list) in tqdm(enumerate(zip(all_examples, all_pairs, all_labels))):
         assert len(label_list) == len(pair_list)
         try:
             with torch.no_grad():
-                if 'scramble_position' in args.perturb:
-                    d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
-                    d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
-                    d = d[torch.randperm(d.size(0))]
-                    roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
-                    sent_features = roberta.encode(sentence)
-
                 if 'bpe_nospace' in args.perturb:
                     sentence = sentence.split()
                     sent_features = [roberta.encode(i)[1:-1] for i in sentence]
