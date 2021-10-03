@@ -17,8 +17,7 @@ def classify(args, all_examples, all_labels):
 
     if 'scramble_position' in args.shuffle_mode:
         d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
-        d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
-        d = d[torch.randperm(d.size(0))]
+        d = torch.cat((d[0:2], d[2:][torch.randperm(d.size(0) - 2)]))
         roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
 
     if 'norm_position' in args.shuffle_mode:
@@ -67,11 +66,9 @@ def classify(args, all_examples, all_labels):
                 tokens = [item for sublist in tokens for item in sublist]
                 tokens = torch.stack(tokens)
                 tokens = torch.cat((torch.tensor([0]), tokens, torch.tensor([2])))
-
             elif 'only_position' in args.shuffle_mode:
                 s_len = len(roberta.encode(" ".join(sentence)))
                 features = roberta.model.encoder.sentence_encoder.embed_positions.weight[:s_len].mean(dim=0)
-
             else:
                 print(f"{args.shuffle_mode} does not exist")
                 return
