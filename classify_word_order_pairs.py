@@ -19,11 +19,18 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
     all_word_labels = []
     all_indices = []
     all_word_tokens = []
+
     if 'scramble_position' in args.perturb:
         d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
         d = torch.cat((d[0:1], d[1:][torch.randperm(d.size(0) - 1)]))
         d = d[torch.randperm(d.size(0))]
         roberta.model.encoder.sentence_encoder.embed_positions.weight.data = d
+
+    if 'norm_position' in args.perturb:
+        d = roberta.model.encoder.sentence_encoder.embed_positions.weight.data
+        mean = d.mean(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
+        std = d.std(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
+        roberta.model.encoder.sentence_encoder.embed_positions.weight.data = torch.normal(mean, std)
 
     for sent_idx, (sentence, pair_list, label_list) in tqdm(enumerate(zip(all_examples, all_pairs, all_labels))):
         assert len(label_list) == len(pair_list)
