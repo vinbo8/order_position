@@ -42,7 +42,8 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
                     sent_features = torch.stack([item for sublist in sent_features for item in sublist])
                     sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
                     sentence = " ".join(sentence)
-                elif 'bpe_space' in args.perturb:
+
+                if 'bpe_space' in args.perturb:
                     sentence = sentence.split()
                     sent_features = [roberta.encode(f" {i}")[1:-1] for i in sentence[1:]]
                     sent_features = [roberta.encode(sentence[0])[1:-1]] + sent_features
@@ -50,10 +51,16 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
                     sent_features = torch.cat((torch.tensor([0]), sent_features, torch.tensor([2])))
                     sentence = " ".join(sentence)
 
+                if 'only_position' in args.perturb:
+                    s_len = len(roberta.encode(" ".join(sentence)))
+                    sent_features = roberta.model.encoder.sentence_encoder.embed_positions.weight[:s_len]
+
                 if 'baseline' in args.perturb:
                     sent_features = roberta.encode(sentence)
 
-                sent_features = roberta.extract_features(sent_features).squeeze(0)
+                if 'only_position' not in args.perturb:
+                    sent_features = roberta.extract_features(sent_features).squeeze(0)
+
                 fft = roberta.extract_features_aligned_to_words(str(sentence))
                 for pair in pair_list:
                     pair_item1 = sent_features[pair[0]]
@@ -73,13 +80,13 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
     if 'leave' in args.perturb:
         z = list(zip(all_word_tokens, all_word_encodings, all_word_labels, all_indices))
         dev_size = 2000
-        X_dev, y_dev = [], []
+        train_size = 10000
         leaveout = tuple(leaveout)
-        X_dev.extend([j for (i, j, k, l) in z if l == leaveout])
-        y_dev.extend([k for (i, j, k, l) in z if l == leaveout])
+        X_dev = [j for (i, j, k, l) in z if l == leaveout][:dev_size]
+        y_dev = [k for (i, j, k, l) in z if l == leaveout][:dev_size]
 
-        X_train = [j for (i, j, k, l) in z if l != leaveout]
-        y_train = [k for (i, j, k, l) in z if l != leaveout]
+        X_train = [j for (i, j, k, l) in z if l != leaveout][:train_size]
+        y_train = [k for (i, j, k, l) in z if l != leaveout][:train_size]
 
         print(f"{len(X_train)}\t{len(X_dev)}")
 
