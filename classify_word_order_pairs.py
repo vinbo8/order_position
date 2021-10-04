@@ -81,12 +81,13 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
         z = list(zip(all_word_tokens, all_word_encodings, all_word_labels, all_indices))
         dev_size = 2000
         train_size = 10000
-        leaveout = tuple(leaveout)
-        X_dev = [j for (i, j, k, l) in z if l == leaveout][:dev_size]
-        y_dev = [k for (i, j, k, l) in z if l == leaveout][:dev_size]
+        # leaveout = tuple(leaveout)
+        leaveout = [(i, j) for i in leaveout for j in leaveout if i != j]
+        X_train = [j for (i, j, k, l) in z if l not in leaveout][:train_size]
+        y_train = [k for (i, j, k, l) in z if l not in leaveout][:train_size]
 
-        X_train = [j for (i, j, k, l) in z if l != leaveout][:train_size]
-        y_train = [k for (i, j, k, l) in z if l != leaveout][:train_size]
+        X_dev = [j for (i, j, k, l) in z if l in leaveout][:dev_size]
+        y_dev = [k for (i, j, k, l) in z if l in leaveout][:dev_size]
 
         print(f"{len(X_train)}\t{len(X_dev)}")
 

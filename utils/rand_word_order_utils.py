@@ -153,7 +153,7 @@ def ud_load_classify_pairwise(args, ud_data, sentence_len_limit, sample_no):
     # parse data
     leaveout = 0
     if 'leave' in args.perturb:
-        leaveout = random.sample(range(1, 10), 2)
+        leaveout = random.sample(range(1, 10), 3)
 
     sentences = parse(ud_data)
     random.shuffle(sentences)
