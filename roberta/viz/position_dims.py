@@ -13,21 +13,21 @@ if __name__ == '__main__':
     num_samples = 500
     map_width = 514
     neurons = [0, 4, 8, 16]
-    embeds = ['roberta.base.orig', 'roberta.base.shuffle.n1', 'roberta.base.shuffle.corpus']
-    fig = make_subplots(cols=2, rows=1, subplot_titles=['mean', 'std'], shared_yaxes=True, vertical_spacing=0)
+    embeds = ['orig', 'shuffle.n1', 'shuffle.n2', 'shuffle.n4', 'shuffle.corpus']
+    fig = make_subplots(cols=1, rows=2, subplot_titles=['mean', 'std'], shared_yaxes=True, vertical_spacing=0)
 
     for c, embed in enumerate(embeds):
-        model = torch.load(f'models/{embed}/model.pt')
+        model = torch.load(f'models/roberta.base.{embed}/model.pt')
         # for n, neuron in enumerate(neurons):
         x_labels = torch.arange(0, map_width)
         position_embed = model['model']['encoder.sentence_encoder.embed_positions.weight']
         position_embed = position_embed.detach().numpy()
 
         palette = qualitative.Safe
-        scatter = fig.add_trace(go.Scatter(x=x_labels, y=position_embed.mean(axis=-1) * 100,
+        scatter = fig.add_trace(go.Scatter(x=x_labels, y=position_embed.mean(axis=-1),
                              name=embed, marker=dict(color=palette[c]), showlegend=True), row=1, col=1)
         scatter = fig.add_trace(go.Scatter(x=x_labels, y=position_embed.std(axis=-1),
-                             name=embed, marker=dict(color=palette[c]), showlegend=False), row=1, col=2)
+                             name=embed, marker=dict(color=palette[c]), showlegend=False), row=2, col=1)
 
     fig.update_layout(template='plotly_white',
                       legend=dict(font=dict(size=24, family=TNR)))

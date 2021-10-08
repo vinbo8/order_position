@@ -16,30 +16,30 @@ if __name__ == '__main__':
     TNR = "Times New Roman"
     num_samples = 500
     map_width = 32
-    embeds = ['orig', 'sin']
+    embeds = ['orig']
     dims = random.sample(range(0, 512), 4)
-    fig = make_subplots(cols=len(dims), rows=len(embeds), column_titles=list(map(str, dims)), shared_yaxes=True, vertical_spacing=0)
+    fig = make_subplots(cols=len(dims), rows=len(embeds), column_titles=list(map(str, dims)),
+                        shared_yaxes=True, vertical_spacing=0)
 
-    for r, embed in enumerate(embeds):
-        if embed != 'sin':
-            model = torch.load(f'models/roberta.base.{embed}/model.pt')
-            position_embed = model['model']['encoder.sentence_encoder.embed_positions.weight']
-            position_embed = position_embed.detach()
-        else:
-            half_dim = 768 // 2
-            emb = math.log(10000) / (half_dim - 1)
-            emb = torch.exp(torch.arange(half_dim, dtype=torch.float) * -emb)
-            emb = torch.arange(514, dtype=torch.float).unsqueeze(
-                1
-            ) * emb.unsqueeze(0)
-            position_embed = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1).view(
-                514, -1
-            )
+    model = torch.load(f'models/roberta.base.orig/model.pt')
+    position_embed = model['model']['encoder.sentence_encoder.embed_positions.weight']
+    position_embed = position_embed.detach()
+
+    for i in range(10):
+        half_dim = 768 // 2
+        emb = math.log(10000) / (half_dim - 1)
+        emb = torch.exp(torch.arange(half_dim, dtype=torch.float) * -emb)
+        emb = torch.arange(514, dtype=torch.float).unsqueeze(
+            1
+        ) * emb.unsqueeze(0)
+        position_embed = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1).view(
+            514, -1
+        )
 
         palette = qualitative.Safe
         offset = 10
         for c, dim in enumerate(dims):
-            embed = position_embed[offset-2:-2, dim].numpy()
+            embed = position_embed[offset:, dim].numpy()
             ys = np.abs(fft(embed)[:(embed.shape[0] // 2) - (offset // 2)])
             xs = np.arange(0, (embed.shape[0] // 2) - (offset // 2))
             fig.add_trace(go.Scatter(x=xs, y=ys), row=r+1, col=c+1)

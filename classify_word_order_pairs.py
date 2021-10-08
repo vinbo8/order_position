@@ -58,6 +58,12 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
                 if 'baseline' in args.perturb:
                     sent_features = roberta.encode(sentence)
 
+                if 'shuffle' in args.perturb:
+                    sentence = sentence.split()
+                    random.shuffle(sentence)
+                    sent_features = roberta.encode(" ".join(sentence))
+                    sentence = " ".join(sentence)
+
                 if 'only_position' not in args.perturb:
                     sent_features = roberta.extract_features(sent_features).squeeze(0)
 
