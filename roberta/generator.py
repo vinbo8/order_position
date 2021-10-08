@@ -14,9 +14,9 @@ with open("uniform.bpe", "w") as f:
 with open("odd_even.bpe", "w") as f:
     odd_bank = token_bank[:len(token_bank) // 2]
     even_bank = token_bank[len(token_bank) // 2:]
-    odd = [" ".join([str(j) for j in random.choices(token_bank, k=i)])
+    odd = [" ".join([str(j) for j in random.choices(odd_bank, k=i)])
            for i in random.choices(range(5, 30, 2), k=50000)]
-    even = [" ".join([str(j) for j in random.choices(token_bank, k=i)])
+    even = [" ".join([str(j) for j in random.choices(even_bank, k=i)])
             for i in random.choices(range(6, 30, 2), k=50000)]
     final = odd + even
     random.shuffle(final)
