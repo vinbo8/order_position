@@ -526,6 +526,7 @@ def cli_main(
     group.add_argument("--lca-log-file", action="store")
     group.add_argument("--scramble-position", action="store_true")
     group.add_argument("--norm-position", action="store_true")
+    group.add_argument("--double-position", action="store_true")
     group.add_argument("--freeze-position", action="store_true")
     group.add_argument("--scramble-tokens", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
