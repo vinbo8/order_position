@@ -1,5 +1,6 @@
 import sys
 import torch
+import Levenshtein
 import numpy as np
 import tqdm
 from scipy.stats import entropy
@@ -31,9 +32,9 @@ def main():
     c = Counter()
     orig_first_tokens = []
     shuf_first_tokens = []
-
+    distances = []
     dataset = load_dataset('bookcorpus', split='train[:1%]')
-    for line in tqdm.tqdm(dataset["text"][:50000]):
+    for line in tqdm.tqdm(dataset["text"][:500]):
         orig = line
         shuf = shuffle_list(orig.split(' '))
         if not shuf:
@@ -42,8 +43,8 @@ def main():
 
         orig = model.encode(orig)[1:-1].numpy()
         shuf = model.encode(shuf)[1:-1].numpy()
-        orig_first_tokens.append(orig[0].item())
-        shuf_first_tokens.append(shuf[0].item())
+        # orig_first_tokens.append(orig[0].item())
+        # shuf_first_tokens.append(shuf[0].item())
 
     orig_counter = Counter(orig_first_tokens)
     shuf_counter = Counter(shuf_first_tokens)

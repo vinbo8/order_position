@@ -525,6 +525,8 @@ def cli_main(
     group.add_argument("--log-lca", action="store_true")
     group.add_argument("--lca-log-file", action="store")
     group.add_argument("--scramble-position", action="store_true")
+    group.add_argument("--norm-position", action="store_true")
+    group.add_argument("--double-position", action="store_true")
     group.add_argument("--freeze-position", action="store_true")
     group.add_argument("--scramble-tokens", action="store_true")
     group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
@@ -535,7 +537,7 @@ def cli_main(
     assert not (args.scramble_position and args.scramble_tokens)
     assert not (args.log_lca ^ bool(args.lca_log_file))
 
-    if args.reset_position:
+    if args.reset_position or args.norm_position:
         assert 'nopos' not in args.restore_file
 
     if args.gaussian_noise:

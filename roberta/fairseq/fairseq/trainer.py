@@ -505,6 +505,13 @@ class Trainer(object):
                     nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
                                     mean=0, std=embed_dim ** -0.5)
 
+                if self.cfg.model.norm_position:
+                    logger.info("renorming position")
+                    d = state["model"]["encoder.sentence_encoder.embed_positions.weight"].data
+                    mean = d.mean(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
+                    std = d.std(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
+                    state["model"]["encoder.sentence_encoder.embed_positions.weight"].data = torch.normal(mean, std)
+
                 self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad = not self.cfg.model.freeze_position
 
                 self.model.load_state_dict(

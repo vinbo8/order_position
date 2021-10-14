@@ -16,13 +16,13 @@ if __name__ == '__main__':
     TNR = "Times New Roman"
     num_samples = 500
     map_width = 32
-    embeds = ['roberta.base.orig', 'roberta.base.shuffle.n1', 'sin']
+    embeds = ['orig', 'sin']
     dims = random.sample(range(0, 512), 4)
-    fig = make_subplots(cols=len(dims), rows=3, row_titles=['Base', '1-gram shuffled', 'sin'], column_titles=list(map(str, dims)), shared_yaxes=True, vertical_spacing=0)
+    fig = make_subplots(cols=len(dims), rows=len(embeds), column_titles=list(map(str, dims)), shared_yaxes=True, vertical_spacing=0)
 
     for r, embed in enumerate(embeds):
         if embed != 'sin':
-            model = torch.load(f'models/{embed}/model.pt')
+            model = torch.load(f'models/roberta.base.{embed}/model.pt')
             position_embed = model['model']['encoder.sentence_encoder.embed_positions.weight']
             position_embed = position_embed.detach()
         else:
@@ -37,10 +37,11 @@ if __name__ == '__main__':
             )
 
         palette = qualitative.Safe
+        offset = 10
         for c, dim in enumerate(dims):
-            embed = position_embed[:, dim].numpy()
-            ys = np.abs(fft(embed)[:embed.shape[0] // 2])
-            xs = np.arange(0, embed.shape[0] // 2)
+            embed = position_embed[offset-2:-2, dim].numpy()
+            ys = np.abs(fft(embed)[:(embed.shape[0] // 2) - (offset // 2)])
+            xs = np.arange(0, (embed.shape[0] // 2) - (offset // 2))
             fig.add_trace(go.Scatter(x=xs, y=ys), row=r+1, col=c+1)
         # print(shapiro(position_embed.flatten().numpy()))
 

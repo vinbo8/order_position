@@ -84,32 +84,29 @@ def classify(args, all_examples, all_pairs, all_labels):
     print(vg_dif_squared, ": vg_dif_squared")
     return r2, avg_dif_abs, vg_dif_squared
 
-def main():
-    parser = argparse.ArgumentParser(description="generate token embeddings from corpus");
-    parser.add_argument('-d', "--dataset_path", type=str);
-    parser.add_argument('-m', "--model_path", type=str);
-    parser.add_argument('-l', "--max_sentence_len", type=int, default=10);
-    parser.add_argument('-sm', "--no_samples", type=int, default=5);
-    parser.add_argument('-ss', "--shuffle_sents", action='store_true', default=False);
-    parser.add_argument('-sb', "--shuffle_bpe", action='store_true', default=False);
-    parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False);
-    parser.add_argument('-c', "--control", action='store_true', default=False);
-    parser.add_argument('-r', "--no_runs", type=int, default=4);
-    arguments = parser.parse_args();
 
-    #model
+def main():
+    parser = argparse.ArgumentParser(description="generate token embeddings from corpus")
+    parser.add_argument('-d', "--dataset_path", type=str)
+    parser.add_argument('-m', "--model_path", type=str)
+    parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
+    parser.add_argument('-sm', "--no_samples", type=int, default=5)
+    parser.add_argument('-ss', "--shuffle_sents", action='store_true', default=False)
+    parser.add_argument('-sb', "--shuffle_bpe", action='store_true', default=False)
+    parser.add_argument('-hw', "--hold_out_words", action='store_true', default=False)
+    parser.add_argument('-c', "--control", action='store_true', default=False)
+    parser.add_argument('-r', "--no_runs", type=int, default=4)
+    arguments = parser.parse_args()
+
     print(arguments.model_path, ' :model')
-    # load dataset
     dataset_file = open(arguments.dataset_path, 'r').read()
 
-    #prep for storing scores
     r2_list, avg_dif_abs_list, vg_dif_squared_list = [],[],[]
     for _ in range(arguments.no_runs):
-        # pass to permute function, returns list of lists where inner list is of all perms per sentence
-        all_examples, all_labels, all_pairs, leven_distances_to_orig, bleu_to_orig = ud_load_regress_pairwise(dataset_file,
-            sentence_len_limit=arguments.max_sentence_len, sample_no=arguments.no_samples, shuffle_level=arguments.shuffle_sents)
-        print(len(all_examples), ' no examples')
-        #classify
+        all_examples, all_labels, all_pairs = ud_load_regress_pairwise(
+            dataset_file, arguments.max_sentence_len, arguments.shuffle_sents, sample_no=arguments.no_samples
+        )
+        print(f'loaded {len(all_examples)} examples')
         r2, avg_dif_abs, vg_dif_squared = classify(arguments, all_examples, all_pairs, all_labels)
         r2_list.append(r2)
         avg_dif_abs_list.append(avg_dif_abs)
@@ -125,12 +122,6 @@ def main():
     print("sq. error avg: {}, sq error lower conf: {}, sq error upper conf: {}".format(
         vg_dif_squared_mean, vg_dif_squared_lower_conf_int, vg_dif_squared_upper_conf_int))
 
-    #compute correlation between ppl and levenstein distance
-    #corr = spearmanr(all_sent_ppl, leven_distances_to_orig)
-    #print(corr, " :correlation of perplexity to leven distance to orig order.")
-    #compute correlation between ppl and bleu-4
-    #corr = spearmanr(all_sent_ppl, bleu_to_orig)
-    #print(corr, " :correlation of perplexity to bleu to orig order.")
 
 
 if __name__ == '__main__':

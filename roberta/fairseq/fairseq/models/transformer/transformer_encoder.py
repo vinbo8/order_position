@@ -72,6 +72,7 @@ class TransformerEncoderBase(FairseqEncoder):
                 self.padding_idx,
                 learned=cfg.encoder.learned_pos,
                 scramble=cfg.scramble_position if 'scramble_position' in dir(cfg) else False,
+                double=cfg.double_position if 'double_position' in dir(cfg) else False,
             )
             if not cfg.no_token_positional_embeddings
             else None

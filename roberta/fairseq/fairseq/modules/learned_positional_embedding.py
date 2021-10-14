@@ -20,10 +20,11 @@ class LearnedPositionalEmbedding(nn.Embedding):
     position ids are passed to the forward function.
     """
 
-    def __init__(self, num_embeddings: int, embedding_dim: int, padding_idx: int, scramble: bool):
+    def __init__(self, num_embeddings: int, embedding_dim: int, padding_idx: int, scramble: bool, double: bool):
         super().__init__(num_embeddings, embedding_dim, padding_idx)
         self.onnx_trace = False
         self.scramble = scramble
+        self.double = double
         if self.padding_idx is not None:
             self.max_positions = self.num_embeddings - self.padding_idx - 1
         else:
@@ -57,6 +58,8 @@ class LearnedPositionalEmbedding(nn.Embedding):
                     positions = utils.make_positions(
                         input, self.padding_idx, onnx_trace=self.onnx_trace
                     )
+                    if self.double:
+                        positions[positions > 2] *= 2
 
         return F.embedding(
             positions,
