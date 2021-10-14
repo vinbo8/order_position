@@ -529,7 +529,7 @@ def cli_main(
     group.add_argument("--double-position", action="store_true")
     group.add_argument("--freeze-position", action="store_true")
     group.add_argument("--scramble-tokens", action="store_true")
-    group.add_argument("--scramble-partition", choices=["ft", "test", "all"], default="ft")
+    group.add_argument("--scramble-partition", choices=["all", "train", "test"], action="store")
     group.add_argument("--preserve-edge", choices=["both", "bos", "eos", "none"], default="none")
     group.add_argument("--gaussian-noise", type=str)
 
