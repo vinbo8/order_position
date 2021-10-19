@@ -10,8 +10,6 @@ use_cuda = torch.cuda.is_available()
 
 def load_shuffled_model(path):
     if "nopos" in path:
-        print(os.path.split(path)[0], " os.path.split(path)[0]")
-        print(os.path.join(os.path.split(path)[0], "roberta.base.orig"), " os.path.join(os.path.split(path)[0]")
         base_model = RobertaModel.from_pretrained(os.path.join(os.path.split(path)[0], "roberta.base.orig"))
         args, task = base_model.model.args, base_model.task
         args.no_token_positional_embeddings = True

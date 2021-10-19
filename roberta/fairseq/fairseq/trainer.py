@@ -512,7 +512,8 @@ class Trainer(object):
                     std = d.std(dim=1).unsqueeze(-1).repeat(1, d.size(-1))
                     state["model"]["encoder.sentence_encoder.embed_positions.weight"].data = torch.normal(mean, std)
 
-                self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad = not self.cfg.model.freeze_position
+                if 'nopos' not in self.cfg['model'].restore_file:
+                    self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad = not self.cfg.model.freeze_position
 
                 self.model.load_state_dict(
                     state["model"], strict=True, model_cfg=self.cfg.model

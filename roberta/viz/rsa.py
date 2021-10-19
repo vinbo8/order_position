@@ -4,6 +4,7 @@ import tqdm
 import random
 import transformers
 from helpers import load_shuffled_model
+from fairseq.models.roberta.model import roberta_small_architecture, RobertaModel
 from datasets import load_dataset
 import plotly.graph_objects as go
 from scipy.spatial import procrustes
@@ -16,7 +17,7 @@ from transformers import BertTokenizer, BertModel
 
 if __name__ == '__main__':
     experiment = 'biling'
-    embeds = {'orig': None, 'shuffle.n1': None, "baseline": None, "token_scramble": None, "bpe_scramble": None}
+    embeds = {"baseline": None, "bpe_scramble": None, "token_scramble": None}
     num_embeds = len(embeds.keys())
     fig = make_subplots(rows=1, cols=len(embeds.keys()), column_titles=list(embeds.keys()))
     map_width = 64
@@ -26,9 +27,11 @@ if __name__ == '__main__':
             model = load_shuffled_model(f'models/roberta.base.{embed}').model
         except:
             model = load_shuffled_model(f'models/roberta.base.orig')
+            roberta_small_architecture(model.model.args)
+            args, task = model.model.args, model.task
+            model = RobertaModel.build_model(args, task)
             params = torch.load(f'models/{embed}.42/checkpoint_last.pt')['model']
-            model.model.load_state_dict(params)
-            model = model.model
+            model.load_state_dict(params)
 
         position_embed = model.encoder.sentence_encoder.embed_positions.weight.detach()
         q_proj = model.encoder.sentence_encoder.layers[0].self_attn.q_proj
