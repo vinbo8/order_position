@@ -519,7 +519,7 @@ class Trainer(object):
                     state["model"], strict=True, model_cfg=self.cfg.model
                 )
 
-                logger.info(f"embeddings require_grad: {self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad}")
+                # logger.info(f"embeddings require_grad: {self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad}")
 
                 # save memory for later steps
                 del state["model"]
