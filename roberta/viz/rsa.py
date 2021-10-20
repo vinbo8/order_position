@@ -17,7 +17,7 @@ from transformers import BertTokenizer, BertModel
 
 if __name__ == '__main__':
     experiment = 'biling'
-    embeds = {"baseline": None, "bpe_scramble": None, "token_scramble": None}
+    embeds = {"orig": None, "shuffle.n1": None, "baseline": None, "bpe_scramble": None, "token_scramble": None}
     num_embeds = len(embeds.keys())
     fig = make_subplots(rows=1, cols=len(embeds.keys()), column_titles=list(embeds.keys()))
     map_width = 64

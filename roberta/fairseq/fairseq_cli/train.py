@@ -521,6 +521,7 @@ def cli_main(
     group = parser.add_argument_group("Position")
     group.add_argument("--invert-position", action="store_true")
     group.add_argument("--reset-position", action="store_true")
+    group.add_argument("--reset-transformer", action="store_true")
     group.add_argument("--use-sinusoidal", action="store_true")
     group.add_argument("--log-lca", action="store_true")
     group.add_argument("--lca-log-file", action="store")

@@ -480,6 +480,7 @@ class Trainer(object):
             # load model parameters
             try:
                 from torch import nn
+                strict = True
                 if 'nopos' in self.cfg['model'].restore_file:
                     if self.cfg.model.invert_position:
                         state["model"]["encoder.sentence_encoder.embed_positions.weight"] = \
@@ -505,6 +506,11 @@ class Trainer(object):
                     nn.init.normal_(state["model"]["encoder.sentence_encoder.embed_positions.weight"],
                                     mean=0, std=embed_dim ** -0.5)
 
+                if self.cfg.model.reset_transformer:
+                    logger.info("resetting transformer")
+                    state["model"] = dict([i for i in state["model"].items() if 'emb' in i[0]])
+                    strict = False
+
                 if self.cfg.model.norm_position:
                     logger.info("renorming position")
                     d = state["model"]["encoder.sentence_encoder.embed_positions.weight"].data
@@ -516,7 +522,7 @@ class Trainer(object):
                     self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad = not self.cfg.model.freeze_position
 
                 self.model.load_state_dict(
-                    state["model"], strict=True, model_cfg=self.cfg.model
+                    state["model"], strict=strict, model_cfg=self.cfg.model
                 )
 
                 # logger.info(f"embeddings require_grad: {self.model.encoder.sentence_encoder.embed_positions.weight.requires_grad}")
