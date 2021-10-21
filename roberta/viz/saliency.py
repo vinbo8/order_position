@@ -60,6 +60,6 @@ def main():
         saliency.append(orig_saliencies.mean())
         correct.append(result[-2] == result[-1])
 
-    print(f"{pearsonr(correct, saliency)[0]}")
+    print(f"{pearsonr(correct, saliency)}")
 
 main()
