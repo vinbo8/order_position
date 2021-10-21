@@ -6,13 +6,13 @@ from plotly.colors import diverging, sequential, qualitative
 
 
 def main():
-    tasks = ["QNLI", "RTE", "QQP", "SST-2", "MNLI", "CoLA"]
-    models = ["orig.keep"]
+    tasks = ["CoLA", "RTE"]
+    models = ["orig", "shuffle.n1"]
     palette = qualitative.Plotly
-    fig = make_subplots(1, 6, column_titles=tasks, row_titles=models)
+    fig = make_subplots(rows=2, cols=6, column_titles=tasks, row_titles=models)
     for c, task in enumerate(tasks):
         for r, model in enumerate(models):
-            with open(f"lca/roberta.base.{model}.{task}.lca", "rb") as f:
+            with open(f"lca/{model}.{task}.lca", "rb") as f:
                 _lca = pickle.load(f)
 
             lca = {".".join(k.split(".")[2:-1]):

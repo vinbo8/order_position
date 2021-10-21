@@ -1,13 +1,7 @@
 import random
-import sys
-import tqdm
-import plotly.graph_objects as go
 import torch
 from argparse import ArgumentParser
 from scipy.stats import pointbiserialr, pearsonr
-from roberta.helpers import load_shuffled_model
-from plotly.colors import diverging, sequential, qualitative
-from plotly.subplots import make_subplots
 from fairseq.models.roberta import RobertaModel
 
 
