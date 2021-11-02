@@ -128,9 +128,11 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+roberta/models
 roberta/models/*/model.pt
-roberta/glue/*/
+roberta/glue/*
 roberta/lca
+roberta/logs
 roberta/viz/*.tokens
 .idea
 corpora/

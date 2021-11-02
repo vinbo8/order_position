@@ -578,6 +578,13 @@ def roberta_prenorm_architecture(args):
     base_architecture(args)
 
 
+@register_model_architecture("roberta", "roberta_small")
+def roberta_small_architecture(args):
+    args.encoder_embed_dim = 64
+    args.encoder_ffn_embed_dim = 256
+    args.encoder_attention_heads = 1
+
+
 @register_model_architecture("roberta", "roberta_base")
 def roberta_base_architecture(args):
     base_architecture(args)
