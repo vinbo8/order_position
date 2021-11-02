@@ -54,9 +54,10 @@ require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/text
 task_to_keys = {
     "axb": ("sentence1", "sentence2"),
     "axg": ("premise", "hypothesis"),
+    "rte": ("premise", "hypothesis"),
     "boolq": ("question", "passage"),
     "cb": ("premise", "hypothesis"),
-    "copa": ("premise", "choice1", "choice2", "question"),
+    #"copa": ("premise", "choice1", "choice2", "question"),
 
 }
 
