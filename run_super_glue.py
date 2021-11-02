@@ -287,12 +287,12 @@ def main():
 
     # Labels
     if data_args.task_name is not None:
-        is_regression = data_args.task_name == "stsb"
-        if not is_regression:
+        if training_args.do_train:
             label_list = raw_datasets["train"].features["label"].names
             num_labels = len(label_list)
         else:
-            num_labels = 1
+            label_list = raw_datasets["test"].features["label"].names
+            num_labels = len(label_list)
     else:
         # Trying to have good defaults here, don't hesitate to tweak to your needs.
         is_regression = raw_datasets["train"].features["label"].dtype in ["float32", "float64"]
