@@ -287,6 +287,7 @@ def main():
 
     # Labels
     if data_args.task_name is not None:
+        is_regression = data_args.task_name == "stsb"
         if training_args.do_train:
             label_list = raw_datasets["train"].features["label"].names
             num_labels = len(label_list)
