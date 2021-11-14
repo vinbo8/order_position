@@ -86,7 +86,7 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
     if 'leave' in args.perturb:
         z = list(zip(all_word_tokens, all_word_encodings, all_word_labels, all_indices))
         dev_size = 2000
-        train_size = 10000
+        train_size = args.train_size
         # leaveout = tuple(leaveout)
         leaveout = [(i, j) for i in leaveout for j in leaveout if i != j]
         X_train = [j for (i, j, k, l) in z if l not in leaveout][:train_size]
@@ -136,6 +136,7 @@ def main():
     parser = argparse.ArgumentParser(description="generate token embeddings from corpus")
     parser.add_argument('-d', "--dataset_path", type=str)
     parser.add_argument('-m', "--model_path", type=str)
+    parser.add_argument('-t', "--train_size", type=int, default=10000)
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
     parser.add_argument('-s', "--no_samples", type=int, default=5)
     parser.add_argument('-r', "--no_runs", type=int, default=3)
