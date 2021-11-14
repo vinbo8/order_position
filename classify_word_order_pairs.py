@@ -1,4 +1,4 @@
-from roberta.helpers import load_shuffled_model
+from roberta.helpers import load_shuffled_model, load_and_invert
 import argparse
 import torch
 from sklearn.model_selection import cross_val_score
@@ -13,7 +13,11 @@ from tqdm import tqdm
 
 def classify(args, all_examples, all_pairs, all_labels, leaveout):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    roberta = load_shuffled_model(args.model_path)
+    if args.invert:
+        roberta = load_and_invert(args.model_path)
+    else:
+        roberta = load_shuffled_model(args.model_path)
+
     roberta.eval()
     all_word_encodings = []
     all_word_labels = []
@@ -138,6 +142,7 @@ def main():
     parser.add_argument('-m', "--model_path", type=str)
     parser.add_argument('-t', "--train_size", type=int, default=10000)
     parser.add_argument('-l', "--max_sentence_len", type=int, default=10)
+    parser.add_argument('-i', "--invert", action='store_true')
     parser.add_argument('-s', "--no_samples", type=int, default=5)
     parser.add_argument('-r', "--no_runs", type=int, default=3)
     parser.add_argument('-p', "--perturb", action='store')
