@@ -30,7 +30,7 @@ def classify(args, all_examples, all_labels):
     for sent_idx, (sentence, label) in tqdm.tqdm(enumerate(zip(all_examples, all_labels))):
         with torch.no_grad():
             if 'pre_encode' in args.shuffle_mode:
-                sentence = sentence.split()
+                sentence = sentence.lower().split()
 
                 if args.shuffle_mode.startswith('baseline'):
                     random.shuffle(sentence)

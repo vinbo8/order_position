@@ -95,7 +95,7 @@ def classify(args, all_examples, all_pairs, all_labels, leaveout):
         X_dev = [j for (i, j, k, l) in z if l in leaveout][:dev_size]
         y_dev = [k for (i, j, k, l) in z if l in leaveout][:dev_size]
 
-        print(f"{len(X_train)}\t{len(X_dev)}")
+        print(f"train: {len(X_train)}\tdev: {len(X_dev)}")
 
     else:
         vocab = []
@@ -151,13 +151,14 @@ def main():
         all_examples, all_labels, all_pairs, leaveout = ud_load_classify_pairwise(
             arguments, dataset_file, arguments.max_sentence_len, arguments.no_samples
         )
-        print(len(all_examples), ' no examples')
         acc = classify(arguments, all_examples, all_pairs, all_labels, leaveout)
         acc_list.append(acc)
 
-    acc_mean, acc_lower_conf_int, acc_upper_conf_int = mean_confidence_interval(acc_list)
-    print("acc avg: {}, acc lower conf: {}, acc upper conf: {}".format(
-        acc_mean, acc_lower_conf_int, acc_upper_conf_int))
+    print(acc_list)
+    print(np.mean(acc_list))
+    # acc_mean, acc_lower_conf_int, acc_upper_conf_int = mean_confidence_interval(acc_list)
+    # print("acc avg: {}, acc lower conf: {}, acc upper conf: {}".format(
+    #     acc_mean, acc_lower_conf_int, acc_upper_conf_int))
 
 
 if __name__ == '__main__':
