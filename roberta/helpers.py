@@ -4,9 +4,7 @@ import torch
 import pickle
 from fairseq.models.roberta import RobertaModel
 
-
 use_cuda = torch.cuda.is_available()
-
 
 def load_shuffled_model(path):
     if "nopos" in path:
